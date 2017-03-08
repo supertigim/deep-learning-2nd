@@ -1,0 +1,7 @@
+.DS_Store
+
+build
+.build_debug/*
+.build_release/*
+cmake_build
+.cmake_build
