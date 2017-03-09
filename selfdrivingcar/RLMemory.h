@@ -1,11 +1,8 @@
 #pragma once
 
-#include <vector>
-#include "tiny_dnn/tiny_dnn.h"
+//#include <vector>
+#include "../common.h"
 
-using namespace tiny_dnn;
-using namespace tiny_dnn::layers;
-using namespace tiny_dnn::activation;
 
 const int MAX_RESERVE = 1000;
 
