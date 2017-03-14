@@ -123,6 +123,7 @@ void Object::checkCollisionLoop(const glm::vec3& ray_start, const glm::vec3& ray
 				flag = 1;
 				col_pt = *col_pt_ptr;		
 				min_t = col_t;
+				delete col_pt_ptr;
 			}		
 		}
 	}

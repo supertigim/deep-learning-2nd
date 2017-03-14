@@ -9,6 +9,8 @@ FIND_PACKAGE(GLEW REQUIRED)
 INCLUDE_DIRECTORIES( /usr/local/Cellar/glm/0.9.8.3/include/ )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} ../core)
 INCLUDE_DIRECTORIES( ../tiny-dnn )
+ADD_SUBDIRECTORY( "../share" "${CMAKE_CURRENT_BINARY_DIR}/lib_build" )
+INCLUDE_DIRECTORIES( ../share )
 
 set (EXTRA_BOOST_LIBS ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY})
 set (EXTRA_LIBS ${GLUT_LIBRARY} ${OpenGL_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY} glfw pthread )
@@ -16,7 +18,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14" )
 
 MESSAGE( STATUS "Compiling Self Driving Car" )
 
-set ( SOURCE_FILES SelfDrivingCarMain.cpp shader.cpp Object.cpp SquareObj.cpp Car.cpp TestDrivingScene.cpp Scene.cpp Agent.cpp ReinforcementLearning.cpp)
+set ( SOURCE_FILES SelfDrivingCarMain.cpp shader.cpp Object.cpp SquareObj.cpp Car.cpp TestDrivingScene.cpp Scene.cpp Agent.cpp)
 
 add_executable( self_driving_car ${SOURCE_FILES} )
-target_link_libraries( self_driving_car ${EXTRA_BOOST_LIBS} ${EXTRA_LIBS})	
+target_link_libraries( self_driving_car ${EXTRA_BOOST_LIBS} ${EXTRA_LIBS} DLShare)	

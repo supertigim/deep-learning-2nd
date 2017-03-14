@@ -1,7 +1,6 @@
 #pragma once
 
-//#include <vector>
-#include "../common.h"
+#include "common.h"
 
 
 const int MAX_RESERVE = 1000;
@@ -49,7 +48,17 @@ public:
 
 	void append(const vec_t& state_vector, const label_t& choice, const float& reward, const vec_t& q_values, const int& terminated)
 	{
-		assert(num_elements_ < num_reserve_);
+		//assert(num_elements_ < num_reserve_);
+		if(num_elements_ > num_reserve_){
+			state_vector_array_.erase (state_vector_array_.begin(),state_vector_array_.begin()+1);
+			selected_array_.erase (selected_array_.begin(),selected_array_.begin()+1);
+			reward_array_.erase (reward_array_.begin(),reward_array_.begin()+1);
+			q_values_array_.erase (q_values_array_.begin(),q_values_array_.begin()+1);
+			terminated_array_.erase (terminated_array_.begin(),terminated_array_.begin()+1);
+
+			//std::cout << "FULL MERMORY!!!!!!"<< endl;
+			--num_elements_;
+		}
 
 		state_vector_array_.push_back(state_vector);
 		selected_array_.push_back(choice);

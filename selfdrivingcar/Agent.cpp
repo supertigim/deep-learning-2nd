@@ -86,6 +86,7 @@ bool Agent::handleKey(){
 
 void Agent::driveCar() {
 
+	int count = 0;
 	while(true) {
 		
 		if(!handleKey()) break;
@@ -102,10 +103,11 @@ void Agent::driveCar() {
 		int isTerminated; 
 		simul_->update(!is_training_, reward, isTerminated);
 
-		if(is_training_){
-			// record state and reward
-			rl_.recordHistory(simul_->getStateBuffer(), reward, selected_dir, q_values, isTerminated);
+		// record state and reward
+		rl_.recordHistory(simul_->getStateBuffer(), reward, selected_dir, q_values, isTerminated);
 
+		if(is_training_){	
+			
 			reward_sum_ += reward;
 
 			// start state replay training at terminal state
@@ -119,19 +121,23 @@ void Agent::driveCar() {
 					std::cout 	<< "**************************" << endl
 								<< "** New record : " << reward_max_ << " **" << endl
 								<< "**************************" << endl;
+
 				}
 
 				reward_sum_ = 0.0f;
-				rl_.trainRewardMemory();
-				initMemory();
 			}
+			if(count >= 10){
+				rl_.trainRandomReplay(count);
+				count =0;	
+			}
+
 			is_good_enough(reward_sum_);
 		}
 		else{
-			// in order to avoid system fault because too much memory consumption 
-			initMemory();			
 			simul_->render();
 		}
+
+		++count;
 	}
 	glfwTerminate();
 

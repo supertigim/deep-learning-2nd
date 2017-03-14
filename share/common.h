@@ -11,4 +11,6 @@ const char endl[] = "\n";
 
 typedef float	F;
 
+#define MIN2(a, b)							((a) > (b) ? (b) : (a))
+#define MAX2(a, b)							((a) > (b) ? (a) : (b))
 // end of file

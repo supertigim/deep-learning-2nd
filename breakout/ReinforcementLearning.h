@@ -21,6 +21,7 @@ public:
 
 	void trainReward();
 	void trainRewardMemory();
+	void trainRandomReplay(int minibatch);
 	void trainReward(const int ix_from_end);
 	
 	vec_t forward();
@@ -30,6 +31,7 @@ public:
 	void makeInputVectorFromHistory(const int& ix_from_end, vec_t& input);
 
 	label_t getOutputLabelwithEpsilonGreedy(const vec_t& q_values, const float& epsilon);
+	const label_t getMaxQLabel(const vec_t& q_values);
 	const float_t getMaxQValue(const vec_t& q_values);
 };
 

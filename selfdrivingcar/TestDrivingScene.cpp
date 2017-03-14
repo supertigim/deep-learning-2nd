@@ -37,7 +37,6 @@ void TestDrivingScene::init() {
 	//std::cout  << getNumStateVariables() << std::end;
 	
 	state_buffer_.resize(getNumStateVariables(), 0);
-	//state_buffer_.assignAllValues(1.0f);
 }
 
 void TestDrivingScene::processInput(const int& action) {
@@ -86,21 +85,15 @@ void TestDrivingScene::update(const bool& update_render_data, float& reward, int
 		car_.init();
 		car_.body_.model_matrix_ = glm::mat4();
 
-		//reward = 0.0f;	// no reward
-		reward = 0.1f;	// no reward
+		reward = 0.0f;	// no reward
+		//reward = 0.1f;	// no reward
 		flag = 1;		// terminal //TODO: use enum 
 	}
 }
 
 int TestDrivingScene::getNumStateVariables() {
-	if (compat_state_ == true) {
-		return car_.distances_from_sensors_.size(); // sensor inputs
-	}
-	else {
-		std::cout << "getNumStateVariables" << endl;
-		//exit(1);
-		return 0;
-	}
+	
+	return car_.distances_from_sensors_.size(); // sensor inputs
 }
 
 int TestDrivingScene::getNumActions() {
@@ -109,21 +102,14 @@ int TestDrivingScene::getNumActions() {
 }
 
 const vec_t& TestDrivingScene::getStateBuffer() {
-	if (compat_state_ == true) {
 		
 
-		for (int i = 0; i < car_.distances_from_sensors_.size(); i++) {
-			//Note: most of distances are larger than 1. Don't clamp.
-			state_buffer_[i] = car_.distances_from_sensors_[i]; 
+	for (int i = 0; i < car_.distances_from_sensors_.size(); i++) {
+		//Note: most of distances are larger than 1. Don't clamp.
+		state_buffer_[i] = car_.distances_from_sensors_[i]; 
 
-			//std::cout << state_buffer_[i];
-		}
-		 //std::cout << endl;
-	}
-	else {
-		std::cout << "getStateBuffer()" << endl;
-		exit(1);
-	}
+		//std::cout << state_buffer_[i];
+	}	
 
 	return state_buffer_;
 }

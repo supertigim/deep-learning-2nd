@@ -3,9 +3,7 @@
 #include "SquareObj.h"
 #include "LineObj.h"
 #include "Car.h"
-//#include "VectorND.h"
 #include "Scene.h"
-//class Scene;
 
 class Agent;
 
