@@ -145,7 +145,7 @@ void Agent::driveCar() {
 
 bool Agent::is_good_enough(float distance_to_travel) {
 
-	const float well_done_distance = 500.0f;
+	const float well_done_distance = 200.0f;
 
 	if( distance_to_travel > well_done_distance) {
 		std::cout 	<< endl 

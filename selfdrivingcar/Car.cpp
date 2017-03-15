@@ -5,7 +5,10 @@
 
 void Car::init() {
 
-	body_.update(glm::vec3(0.6, -0.3, 0.0f), 0.1f, 0.05f);
+	//const float m = -0.3f;
+	const float m = uniform_rand(-0.4f,-0.2f);
+
+	body_.update(glm::vec3(0.6, m, 0.0f), 0.05f, 0.05f);
 
 	dir_ = glm::vec3(1.0f, 0.0f, 0.0f);
 	vel_ = glm::vec3(0.01f, 0.0f, 0.0f);
