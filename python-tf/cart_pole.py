@@ -66,7 +66,7 @@ for i in range(random_episodes):
 			x1 = np.reshape(s1, [1, input_size])
 
 			#Obtain the Q' value by feeding the new state through the network
-			Qs1 = sess.run(Qpred, feed_dict={X: x})
+			Qs1 = sess.run(Qpred, feed_dict={X: x1})
 			Qs[0, a] = reward + dis * np.max(Qs1)
 
 		# Train the network using target and predicted Q value on each episode
