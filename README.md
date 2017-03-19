@@ -2,6 +2,40 @@
 
 [All previous neural net studies](https://github.com/supertigim/deep.learning) are rewritten by using tiny-dnn. It will help me to test an advanced algorithm easily. Also, there is python source code with tensorflow in python-tf directory which comes from online lectures by professor [Sunghun Kim](http://www.cse.ust.hk/~hunkim/) at HKUST.
 
+## Changes in tiny-DNN  
+
+**Random generator in random.h**  
+	
+	class random_generator {  
+	public:  
+		static random_generator &get_instance() {  
+		static random_generator instance;  
+		return instance;  
+	}  
+
+	std::mt19937 &operator()() {   
+		set_seed(rd_());  // ADD!!!
+		return gen_;  
+	}    
+
+	void set_seed(unsigned int seed) { gen_.seed(seed); }  
+
+	private:  
+		// avoid gen_(0) for MSVC known issue  
+		// https://connect.microsoft.com/VisualStudio/feedback/details/776456  
+		random_generator() : gen_(3) {}  
+		std::mt19937 gen_;  
+		std::random_device rd_;	// ADD!!!  
+	};
+
+**Uncomment defines in config.h**   
+
+	#define CNN_USE_SSE  
+	#define CNN_USE_OMP  
+	#define CNN_USE_GCD  
+	#define CNN_USE_EXCEPTIONS  
+	#define CNN_USE_STDOUT  
+  
 ## Reference  
 
 1.[tiny-dnn online manual](http://tiny-dnn.readthedocs.io/en/latest/index.html)  
