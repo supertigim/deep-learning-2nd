@@ -45,7 +45,10 @@
 5.[구글 AI Experiments](https://aiexperiments.withgoogle.com/)  
 6.[AI Duet이라는 들은 음악에 맞춰 자동 연주](https://github.com/googlecreativelab/aiexperiments-ai-duet)  
 7.[Caffe로 구현한 breakout with DQN](https://github.com/muupan/dqn-in-the-caffe)  
-   
+8.[python으로 구현한 self driving car](https://github.com/musyoku/self-driving-cars)  
+9.[8번 설명 사이트](http://deeplearningstudy.github.io/doc_caffe_intro.html)   
+9.[Caffe c++ 스터디](https://github.com/DeepLearningStudy)  
+
 ## license   
   
 **MIT**
