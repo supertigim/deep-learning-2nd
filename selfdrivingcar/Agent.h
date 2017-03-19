@@ -22,7 +22,7 @@ public:
 protected:
 	bool handleKey();
 	void initMemory();
-	bool is_good_enough(float distance_to_travel);
+	bool is_good_enough(float& distance_to_travel);
 };
 
 // end of file

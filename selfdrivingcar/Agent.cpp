@@ -30,21 +30,20 @@ void Agent::initMemory(){
 	vec_t q_values = {0.0f, 0.0f, 0.0f};
 	int terminated = 0;
 	for (int h = 0; h < rl_.num_input_histories_; h++) {
-		rl_.recordHistory(simul_->getStateBuffer(), 0.0f, 2, q_values, terminated ); // choice 2 is stay
+		rl_.recordHistory(simul_->getStateBuffer(), 0.0f, 0, q_values, terminated ); // choice 2 is stay
 	}
 }
 
 const int Agent::getSelectedDir(const vec_t& q_values){
-	int selected_dir = 2;
+	int selected_dir = 0;
 
 	// user supervised mode
-	if (simul_->getKeyPressed(GLFW_KEY_LEFT) == true) selected_dir = 0;
-	else if (simul_->getKeyPressed(GLFW_KEY_RIGHT) == true) selected_dir = 1;
+	if (simul_->getKeyPressed(GLFW_KEY_LEFT) == true) selected_dir = 1;
+	else if (simul_->getKeyPressed(GLFW_KEY_RIGHT) == true) selected_dir = 2;
 	// AI mode
 	else  {
 		selected_dir = is_training_ == true ? rl_.getOutputLabelwithEpsilonGreedy(q_values, 0.2f) : rl_.getOutputLabelwithEpsilonGreedy(q_values, 0.0f);	
 	}
-
 	if (simul_->getKeyPressed(GLFW_KEY_Q) == true) {
 
 		rl_.nn_.save("SELF-DRIVING-CAR-MODEL");
@@ -72,10 +71,13 @@ bool Agent::handleKey(){
 
 			if (is_training_) {
 				std::cout << "Back ground training mode" << endl;
+				rl_.memory_.reset();
 			}
 			else {
 				std::cout << "Interactive rendering mode" << endl;
 			}
+
+
 		}
 	}
 	else {
@@ -93,7 +95,17 @@ void Agent::driveCar() {
 
 		vec_t q_values = rl_.forward();
 		
-		const int selected_dir = getSelectedDir(q_values);	
+		const int selected_dir = getSelectedDir(q_values);
+
+		if( count >= 100){
+			//std::cout << q_values.size() << endl;
+			std::cout << "QValue: " 
+					<< q_values[0] <<" | "
+					<< q_values[1] <<" | "
+					<< q_values[2] <<" | "
+					<< "Action: " << selected_dir << endl;	
+		}
+		
 		simul_->processInput(selected_dir);					
 		
 		float reward;
@@ -143,9 +155,9 @@ void Agent::driveCar() {
 
 }
 
-bool Agent::is_good_enough(float distance_to_travel) {
+bool Agent::is_good_enough(float& distance_to_travel) {
 
-	const float well_done_distance = 200.0f;
+	const float well_done_distance = 500.0f;
 
 	if( distance_to_travel > well_done_distance) {
 		std::cout 	<< endl 
@@ -154,6 +166,7 @@ bool Agent::is_good_enough(float distance_to_travel) {
 					<< "**************************" << endl;
 		initMemory();
 		is_training_ = false;
+		distance_to_travel = 0.0f;
 		return true;
 	}
 	return false;

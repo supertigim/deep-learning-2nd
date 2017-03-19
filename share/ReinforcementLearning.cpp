@@ -5,22 +5,25 @@ void ReinforcementLearning::initialize() {
 	
 	std::cout << "[ReinforcementLearning::initialize]input num:" << num_state_variables_ * num_input_histories_ << endl;
 	
-	const int fc1_n_c = num_state_variables_ * num_input_histories_;
-	const int fc2_n_c = num_state_variables_ * num_input_histories_;
-
+	const int fc1_n_c = num_state_variables_ * num_input_histories_ ;
+	const int fc2_n_c = num_state_variables_ * num_input_histories_ ;
+	const int fc3_n_c = num_state_variables_ * num_input_histories_ ;
+	//*
 	nn_	<< fully_connected_layer<leaky_relu>(num_state_variables_ * num_input_histories_,fc1_n_c) 
 		<< fully_connected_layer<leaky_relu>(fc1_n_c,fc2_n_c) 
-		<< fully_connected_layer<leaky_relu>(fc2_n_c,fc2_n_c) 
-		<< fully_connected_layer<leaky_relu>(fc2_n_c,fc2_n_c) 
-		<< fully_connected_layer<softmax>(fc2_n_c,num_game_actions_);
+		<< fully_connected_layer<leaky_relu>(fc2_n_c,fc3_n_c) 
+		<< fully_connected_layer<leaky_relu>(fc3_n_c,fc3_n_c) 
+		<< fully_connected_layer<leaky_relu>(fc3_n_c,fc3_n_c) 
+		//<< fully_connected_layer<softmax>(fc3_n_c,num_game_actions_);
+		<< fully_connected_layer<leaky_relu>(fc3_n_c,num_game_actions_);
 
-	gamma_ = 0.90f;
-
+	gamma_ = 0.95f;
+	//*/
 	/*
 	nn_	<< fully_connected_layer<tan_h>(num_state_variables_ * num_input_histories_,fc1_n_c) 
 		<< fully_connected_layer<tan_h>(fc1_n_c,fc2_n_c) 
-		<< fully_connected_layer<tan_h>(fc1_n_c,fc2_n_c) 
-		<< fully_connected_layer<tan_h>(fc2_n_c,num_game_actions_);
+		<< fully_connected_layer<tan_h>(fc2_n_c,fc3_n_c) 
+		<< fully_connected_layer<tan_h>(fc3_n_c,num_game_actions_);
 
 	gamma_ = 0.95f;
 	//*/
@@ -30,7 +33,8 @@ void ReinforcementLearning::initialize() {
 
 void ReinforcementLearning::initializeConv2D(int height, int width) {
 
-	typedef convolutional_layer<activation::identity> conv;
+	//typedef convolutional_layer<activation::identity> conv;
+	typedef convolutional_layer<relu> conv;
 	typedef max_pooling_layer<relu> pool;
 
 	// by default will use backend_t::tiny_dnn unless you compiled
@@ -48,7 +52,7 @@ void ReinforcementLearning::initializeConv2D(int height, int width) {
 		<< conv(height/2, width/2, kernel_size, n_fmaps, n_fmaps2, padding::same, true, 1, 1, backend_type)
 		<< pool(height/2, width/2, n_fmaps2, 2, backend_type)
 		<< fully_connected_layer<relu>(height/4 * width/4 * n_fmaps2, n_fc, true, backend_type)
-		<< fully_connected_layer<relu>(n_fc, num_game_actions_, true, backend_type);
+		<< fully_connected_layer<softmax>(n_fc, num_game_actions_, true, backend_type);
 
 	//const int num_channels = 1;
 	//const int fc_n_c = width * height;
@@ -76,6 +80,7 @@ void ReinforcementLearning::initializeConv2D(int height, int width) {
 
 	gamma_ = 0.95f;
 
+	nn_.init_weight();
 	old_input_vector_.resize(num_state_variables_ * num_input_histories_, 0.0f);
 
 }
@@ -94,32 +99,40 @@ void ReinforcementLearning::trainRandomReplay(int minibatch) {
 	}
 
 	std::vector<vec_t> train_input, desired_output;
-	size_t batch_size = minibatch;
-	size_t epochs = minibatch; // to make it faster... but why... 
+	size_t batch_size = 1;//minibatch;
+	size_t epochs = 1;//minibatch; //to make it faster... but why... 
+
 	//gradient_descent optimizer;
+	//RMSprop optimizer;
 	adam optimizer;
 	
 	while(minibatch > 0){
-		//std::vector<vec_t> train_input, desired_output;
 
 		const int m = uniform_rand(num_input_histories_
 						,memory_.num_elements_ - 1 - num_input_histories_);
 		const int ix_from_end = m - (memory_.num_elements_ - 1);
 
-		const float reward_ix = memory_.getRewardFromLast(ix_from_end);
-		vec_t q_values = memory_.getQValuesFromLast(ix_from_end);
+		const float reward = memory_.getRewardFromLast(ix_from_end);
 		const label_t action = memory_.getSelectedIxFromLast(ix_from_end);
 
+		// get Q-values from s1 using CURRENT Network 
+		makeInputVectorFromHistory(ix_from_end, old_input_vector_);
+		vec_t q_values = forward(old_input_vector_);
+		
+		// s1 to get maxQ and q-values
 		makeInputVectorFromHistory(ix_from_end-1, old_input_vector_);
 		const float maxQ = getMaxQValue(forward(old_input_vector_));	
 
+		// learning algorithm 	
 		if(memory_.getTermiatedFromLast(ix_from_end)){
-			q_values[action] = reward_ix;
+			q_values[action] = reward;
 		}
 		else {
-			q_values[action] = reward_ix + gamma_ * maxQ;
+			q_values[action] = reward + gamma_ * maxQ;
 		}
 
+		// s1 as input
+		makeInputVectorFromHistory(ix_from_end, old_input_vector_);
 		train_input.push_back(old_input_vector_);
 		desired_output.push_back(q_values);
 
@@ -128,8 +141,10 @@ void ReinforcementLearning::trainRandomReplay(int minibatch) {
 		--minibatch;
 	}
 
-  	optimizer.alpha *=
-    	static_cast<tiny_dnn::float_t>(sqrt(batch_size) * gamma_);
+	if(batch_size > 1){
+	  	optimizer.alpha *=
+	    	static_cast<tiny_dnn::float_t>(sqrt(batch_size) * gamma_);
+	}
 	
 	nn_.fit<mse>(optimizer, train_input, desired_output, batch_size, epochs);
 }
@@ -196,8 +211,9 @@ void ReinforcementLearning::makeInputVectorFromHistory(const int& ix_from_end, v
 label_t ReinforcementLearning::getOutputLabelwithEpsilonGreedy(const vec_t& q_values, const float& epsilon){
 	if (epsilon > 0.0) {
 		if(bernoulli(epsilon)){
+			return uniform_idx(q_values);
 			//std::cout << "Random Action" << endl;
-			return 	uniform_rand(0,num_game_actions_ -1);
+			//return 	uniform_rand(0,num_game_actions_ -1);
 		}
 		//std::cout << "Action from Q-Values" << endl;
 

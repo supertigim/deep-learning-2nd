@@ -10,15 +10,48 @@ void TestDrivingScene::init() {
 
 	car_.init();
 
-	{
-		Object *temp = new Object;
-		temp->initCircle(glm::vec3(0.5f, 0.5f, 0.0f), 1.0f, 30);
-		obj_list.push_back(std::move(std::unique_ptr<Object>(temp)));
-	}
+	const float	world_center_x = 0.5f,
+				world_center_y = 0.5,
+				world_radius = 1.2f,
+				obstacle_radius = 0.05f,
+				margin = 0.00f;
+
 
 	{
 		Object *temp = new Object;
-		temp->initCircle(glm::vec3(0.5f, 0.5f, 0.0f), 0.65f, 30);
+		temp->initCircle(glm::vec3(world_center_x, world_center_y, 0.0f), world_radius, 30);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(temp)));
+	}
+
+	/*
+	for(int i = 0 ; i < 40; ++i){
+		float x,y;
+		//set_random_seed(i);
+
+		while (true){
+			//std::cout << "minx: " << world_center_x - (world_radius - obstacle_radius)
+			//		<< "maxx: " << world_center_x + (world_radius - obstacle_radius) << endl;
+			x = uniform_rand(world_center_x - (world_radius - obstacle_radius - margin)
+								, world_center_x + (world_radius - obstacle_radius - margin));
+			y = uniform_rand(world_center_y - (world_radius - obstacle_radius - margin)
+								, world_center_y + (world_radius - obstacle_radius - margin));
+
+			//std::cout << "x: " << x << " y: " << y << endl;
+			if( world_radius > std::sqrt((x-world_center_x)*(x-world_center_x)
+										 + (y-world_center_y)*(y-world_center_y)))
+				break;
+		}
+
+		Object *temp = new Object;
+		temp->initCircle(glm::vec3(x, y, 0.0f), obstacle_radius, 6);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
+
+	}
+	//*/
+//*
+	{
+		Object *temp = new Object;
+		temp->initCircle(glm::vec3(0.5f, 0.5f, 0.0f), 0.75f, 20);
 		obj_list.push_back(std::move(std::unique_ptr<Object>(temp)));
 	}
 
@@ -26,30 +59,37 @@ void TestDrivingScene::init() {
 	{
 		Object *temp = new Object;
 		//temp->initCircle(glm::vec3(0.98f, 0.0f, 0.0f), 0.05f, 6);
-		temp->initCircle(glm::vec3(1.01f, 0.0f, 0.0f), 0.05f, 6);
+		temp->initCircle(glm::vec3(-0.43, 0.0f, 0.0f), 0.05f, 6);
 		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
 	}
 	
 	{
 		Object *temp = new Object;
-		temp->initCircle(glm::vec3(1.45f, 0.5f, 0.0f), 0.05f, 6);
+		temp->initCircle(glm::vec3(1.65f, 0.5f, 0.0f), 0.05f, 6);
 		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
 	}
 
 	{
 		Object *temp = new Object;
 		//temp->initCircle(glm::vec3(0.98f, 1.0f, 0.0f), 0.05f, 6);
-		temp->initCircle(glm::vec3(1.0f, 1.0f, 0.0f), 0.05f, 6);
+		temp->initCircle(glm::vec3(1.0f, 1.1f, 0.0f), 0.05f, 6);
 		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
 	}
 	
 	{
 		Object *temp = new Object;
 		//temp->initCircle(glm::vec3(0.5f, 1.45f, 0.0f), 0.05f, 6);
-		temp->initCircle(glm::vec3(0.5f, 1.25f, 0.0f), 0.05f, 6);
+		temp->initCircle(glm::vec3(0.2f, 1.3f, 0.0f), 0.05f, 6);
 		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
 	}
 
+	{
+		Object *temp = new Object;
+		//temp->initCircle(glm::vec3(0.5f, 1.45f, 0.0f), 0.05f, 6);
+		temp->initCircle(glm::vec3(0.50f, -0.35f, 0.0f), 0.05f, 6);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(temp))); 
+	}
+//*/
 	// Camera matrix
 	View_ = glm::lookAt(
 		glm::vec3(0.5, 0.5, 3), // Camera is at (4,3,3), in World Space
@@ -72,14 +112,14 @@ void TestDrivingScene::processInput(const int& action) {
 
 	switch (action)
 	{
-	case 0:
-		car_.turnLeft(); // right
-		break;
 	case 1:
-		car_.turnRight(); // left
+		car_.turnLeft(); // left
 		break;
 	case 2:
-		// stay
+		car_.turnRight(); // right
+		break;
+	case 0:
+		// stay straight
 		break;
 	default:
 		std::cout << "Wrong action " << endl;
@@ -102,10 +142,10 @@ void TestDrivingScene::update(const bool& update_render_data, float& reward, int
 	float normalized = 5.0f;
 	float collideWarningThreshold = 0.1f;
 	float discount = 0.0f;
-
+/*
 	for (int i = 0 ; i < rayNums; ++i){
 		if(car_.distances_from_sensors_[i] < collideWarningThreshold)
-			discount += 0.005f;
+			discount += 0.02f;
 			//std::cout << "WARNING" << endl;
 	}
 	reward /= (rayNums * normalized);
@@ -124,16 +164,30 @@ void TestDrivingScene::update(const bool& update_render_data, float& reward, int
 						car_.distances_from_sensors_[rayNums/2]+
 						car_.distances_from_sensors_[rayNums/2+2])/(4.0f*normalized);
 	}
+*/
+	for( int i = 0 ; i < rayNums ; ++i) {
+		aheadReward += car_.distances_from_sensors_[i];
+	}
+	aheadReward /= (rayNums * 10.0f);
 
-	//std::cout << "aheadReward" << aheadReward << endl;
+	//std::cout << "aheadReward: " << aheadReward << endl; 
+
 	// velocity reward
 	const float speed = glm::dot(car_.vel_, car_.dir_);
 	const float max_speed = 0.01f;
 	//reward = speed / max_speed;
-	//reward = 0.1f;
-	reward = 0.05f + aheadReward - discount; // constant reward for this example
+	//reward = 1.0f;
+	//reward = 0.5f;
+	//reward = reward/2 + aheadReward/2 ;// - discount; // constant reward for this example
+	reward = aheadReward;
 
 	//std::cout << "reward" << reward << endl;
+
+	// normalized into 0.1 or -0.1 
+	//reward == 0 ?
+    //          0 :
+    //          reward /= std::abs(reward)*10.0f;
+
 
 	// collision check
 	glm::vec3 col_line_center;
@@ -143,10 +197,10 @@ void TestDrivingScene::update(const bool& update_render_data, float& reward, int
 		
 		// reset car status
 		car_.init();
-		car_.body_.model_matrix_ = glm::mat4();
+		//car_.body_.model_matrix_ = glm::mat4();
 
-		//reward = 0.0f;	// no reward
-		reward = -0.5f;	// no reward
+		reward = -1.0f;	// no reward
+		//reward = -0.20f;		// no reward
 		flag = 1;		// terminal //TODO: use enum 
 	}
 }
@@ -184,8 +238,8 @@ void TestDrivingScene::run(){
 			break;
 
 		// animate update
-		if (getKeyPressed(GLFW_KEY_LEFT) == true) processInput(0);
-		if (getKeyPressed(GLFW_KEY_RIGHT) == true) processInput(1);
+		if (getKeyPressed(GLFW_KEY_LEFT) == true) processInput(1);
+		if (getKeyPressed(GLFW_KEY_RIGHT) == true) processInput(2);
 
 		processInput(2); // always accelerate in this example
 

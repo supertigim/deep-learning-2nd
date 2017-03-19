@@ -22,11 +22,12 @@ public:
 
 public:
 	Car() 
-		: turn_coeff_(2.0f), accel_coeff_(0.0001f), fric(0.01f), sensing_radius(1.0f)
-		, sensor_min(-90), sensor_max(90), sensor_di(10)
+		: turn_coeff_(2.0f), accel_coeff_(0.0001f), fric(0.02f), sensing_radius(0.25f)
+		, sensor_min(-90), sensor_max(90), sensor_di(15)
 	{}
 
 	void init();
+	void startDirection(float dir);
 	void turnLeft();
 	void turnRight();
 	void accel();

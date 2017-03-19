@@ -1,8 +1,9 @@
 #include "TestDrivingScene.h"
 #include "Agent.h"
+#include "ctime"
 
 int main(int argc, char** argv) {
-	set_random_seed(3);
+	set_random_seed(1);
 	
 	TestDrivingScene scene;
 	Agent agent(&scene);
