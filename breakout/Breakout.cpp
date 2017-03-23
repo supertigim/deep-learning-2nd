@@ -6,7 +6,7 @@ Breakout::Breakout()
 	: wall_thickness_(DEFAULT_WALL_WIDTH), 
 	paddle_width_(DEFAULT_PADDLE_WIDTH_RATIO)
 {
-	srand((int)time(NULL));
+	//srand((int)time(NULL));
 
 	paddle_x_ = START_POSITION;
     restart();
@@ -31,10 +31,12 @@ void Breakout::normalize(float& x, float& y) {
 }
 
 void Breakout::restart() {
-    ball_x_ = (float)rand() / (float)RAND_MAX;		// 가운데 
+    ball_x_ = uniform_rand(0.0f, 1.0f);
+    //ball_x_ = (float)rand() / (float)RAND_MAX;		// 가운데 
     ball_y_ = START_POSITION;		// 가운데
 
-    ball_vel_x_ = (float)rand() / (float)RAND_MAX - DEFAULT_BALL_SPEED;	// 좌/우 이동 속도
+    ball_vel_x_ = uniform_rand(-DEFAULT_BALL_SPEED, 0.0f);
+    //ball_vel_x_ = (float)rand() / (float)RAND_MAX - DEFAULT_BALL_SPEED;	// 좌/우 이동 속도
     ball_vel_y_ = -DEFAULT_BALL_SPEED;							// 위로 쏘세요
 
     normalize(ball_vel_x_, ball_vel_y_);
@@ -45,13 +47,27 @@ const vec_t& Breakout::getStateBuffer(){
         for (int i = 0; i < width_; i++) {
             float value = 0.0f;
 
-            if (front_buffer_[j + width_* i] == '*') 		value = 0.1f;
-            else if (front_buffer_[j + width_*i] == '-') 	value = 0.05f;
+            if (front_buffer_[j + width_* i] == '*') 		value = 0.8f;
+            else if (front_buffer_[j + width_*i] == '-') 	value = 0.4f;
 
             state_buffer_[i + width_*j] = value;
         }
     }
     return state_buffer_;
+}
+
+
+void Breakout::getStateBuffer(vec_t& t) {
+    for (int j = 0; j < height_; j++){
+        for (int i = 0; i < width_; i++) {
+            float value = 0.0f;
+
+            if (front_buffer_[j + width_* i] == '*')        value = 0.8f;
+            else if (front_buffer_[j + width_*i] == '-')    value = 0.4f;
+
+            t[i + width_*j] = value;
+        }
+    }
 }
 
 void Breakout::printStateBuffer(){
@@ -95,12 +111,13 @@ float Breakout::updateSatus(float dt){
         if (ball_x_ >= paddle_x_ && ball_x_ <= paddle_x_ + paddle_width_) {
 
             ball_vel_y_ = -ball_vel_y_;
-            ball_vel_x_ += ((float)rand() / (float)RAND_MAX - DEFAULT_BALL_SPEED) * 0.2f;
+            ball_vel_x_ += uniform_rand(-DEFAULT_BALL_SPEED, 0.0f);
+            //ball_vel_x_ += ((float)rand() / (float)RAND_MAX - DEFAULT_BALL_SPEED) * 0.2f;
 
             // for faster training
-            if(trainig_mode_) {
-            	restart(); 	
-            }
+            //if(trainig_mode_) {
+            //	restart(); 	
+            //}
 
             if( std::abs(ball_x_ - (paddle_x_ + (paddle_width_/2))) < 0.05f ){
                 //std::cout << "hit center";
@@ -133,7 +150,6 @@ float Breakout::updateSatus(float dt){
 void Breakout::makeScene(){
 
 	char paddleImg[] = "------";
-	//char paddleImg_t[] = "-----";
     char* paddleImagePtr = nullptr;
     int paddleImgSize;
 

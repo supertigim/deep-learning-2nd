@@ -29,6 +29,7 @@ public:
 
     void restart();
     const vec_t& getStateBuffer();
+    void getStateBuffer(vec_t& t);
     void printStateBuffer();
 
     void movePaddle(DirType dir, float dx = PADDLE_MOVE_RATE);
