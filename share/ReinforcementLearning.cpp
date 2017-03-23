@@ -29,60 +29,37 @@ void ReinforcementLearning::initialize() {
 	//*/
 
 	old_input_vector_.resize(num_state_variables_ * num_input_histories_, 0.0f);
+	replay_.init(num_state_variables_,num_input_histories_);
 }
 
 void ReinforcementLearning::initializeConv2D(int height, int width) {
 
 	//typedef convolutional_layer<activation::identity> conv;
-	typedef convolutional_layer<relu> conv;
+	typedef convolutional_layer<tan_h> conv;
 	typedef max_pooling_layer<relu> pool;
 
 	// by default will use backend_t::tiny_dnn unless you compiled
 	// with -DUSE_AVX=ON and your device supports AVX intrinsics
 	core::backend_t backend_type = core::default_engine();
 
-	const int kernel_size = 5;		// 5*5 kernel
+	const int kernel_size = 5;				// 5*5 kernel
 
-	const serial_size_t n_fmaps = height;  ///< number of feature maps for upper layer
-	const serial_size_t n_fmaps2 =height*2;  ///< number of feature maps for lower layer
-	const serial_size_t n_fc =height*2;  ///< number of hidden units in fully-connected layer
+	const serial_size_t n_fmaps = height;	//< number of feature maps for upper layer
+	const serial_size_t n_fmaps2 =height*2;	//< number of feature maps for lower layer
+	const serial_size_t n_fc =height*2;		//< number of hidden units in fully-connected layer
 
 	nn_ << conv(height, width, kernel_size, num_input_histories_, n_fmaps, padding::same, true, 1, 1, backend_type)
 		<< pool(height, width, n_fmaps, 2, backend_type)
 		<< conv(height/2, width/2, kernel_size, n_fmaps, n_fmaps2, padding::same, true, 1, 1, backend_type)
 		<< pool(height/2, width/2, n_fmaps2, 2, backend_type)
 		<< fully_connected_layer<relu>(height/4 * width/4 * n_fmaps2, n_fc, true, backend_type)
-		<< fully_connected_layer<softmax>(n_fc, num_game_actions_, true, backend_type);
-
-	//const int num_channels = 1;
-	//const int fc_n_c = width * height;
-
-	//// by default will use backend_t::tiny_dnn unless you compiled
-	//// with -DUSE_AVX=ON and your device supports AVX intrinsics
-  	//core::backend_t backend_type = core::default_engine();
-
-	//const int c1_kernel_size = 5;		// 5*5 kernel
-	//// input channel <= here use 4 scree captures
-	//const int c1_input_channel= num_input_histories_;
-	//// feature map (output channel)
-	//const int c1_fmaps = num_channels * num_input_histories_;	
-
-	//const int c2_kernel_size = 5;		// 5*5 kernel 
-	//// feature map (output channel)
-	//const int c2_fmaps = num_channels * num_input_histories_;	
-
-	//nn_	<< conv<tan_h>(width, height, c1_kernel_size, c1_input_channel
-	//				,c1_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type)
-	//	<< conv<leaky_relu>(width, height, c2_kernel_size,c1_fmaps
-	//				,c2_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type)
-	//	<< fully_connected_layer<leaky_relu>(width*height*c2_fmaps, fc_n_c)
-	//	<< fully_connected_layer<leaky_relu>(fc_n_c, num_game_actions_);
+		<< fully_connected_layer<leaky_relu>(n_fc, num_game_actions_, true, backend_type);
 
 	gamma_ = 0.95f;
 
-	nn_.init_weight();
+	//nn_.init_weight();
 	old_input_vector_.resize(num_state_variables_ * num_input_histories_, 0.0f);
-
+	replay_.init(num_state_variables_,num_input_histories_);
 }
 
 // train with last memory
@@ -91,6 +68,53 @@ void ReinforcementLearning::trainReward() {
 }
 
 // DQN
+void ReinforcementLearning::trainWithDQN(int minibatch){
+
+	std::vector<vec_t> train_input_vector, desired_output_vector;
+	size_t batch_size = 1;//minibatch;
+	size_t epochs = 1;//minibatch; //to make it faster... but why... 
+
+	//gradient_descent optimizer;
+	//RMSprop optimizer;
+	adam optimizer;
+
+	std::vector<int> idx_vector;
+	replay_.getSampleIdxVector(idx_vector, batch_size);
+
+	for(int i = 0 ; i < idx_vector.size(); ++i){
+		vec_t s1, s2;
+		if(!replay_.getState(idx_vector[i],s1,s2)) continue;
+		label_t action;
+		replay_.getAction(idx_vector[i],action);
+		float reward;
+		replay_.getReward(idx_vector[i],reward);
+
+		// get Q-values from s1 using CURRENT Network 
+		vec_t desired_output = forward(s1);
+		//vec_t desired_output = forward(s2);
+		//vec_t desired_output(num_game_actions_,0.0f);
+
+		// learning algorithm 	
+		if(!s2.size()){
+			desired_output[action] = reward;
+		}
+		else {
+			// get maxQ from s2
+			const float maxQ = getMaxQValue(forward(s2));
+			desired_output[action] = reward + gamma_ * maxQ;
+		}
+		train_input_vector.push_back(s1);
+		desired_output_vector.push_back(desired_output);
+	}
+
+	//if(batch_size > 1){
+	//  	optimizer.alpha *=
+	//    	static_cast<tiny_dnn::float_t>(sqrt(batch_size) * gamma_);
+	//}
+
+	nn_.fit<mse>(optimizer, train_input_vector, desired_output_vector, batch_size, epochs);
+}
+
 void ReinforcementLearning::trainRandomReplay(int minibatch) {
 
 	if(memory_.num_elements_ < num_input_histories_ + minibatch){

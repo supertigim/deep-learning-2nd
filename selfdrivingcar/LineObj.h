@@ -11,6 +11,7 @@ public:
 	using Object::genVertexBuffer;
 
 	void update(const std::vector<glm::vec3>& vertices_input) {
+		glDeleteBuffers(1, &vertexbuffer);	// free memory !!!!!!!!!!!!!!!!
 		vertices.clear();
 
 		for(auto itr : vertices_input) {
