@@ -1,7 +1,10 @@
 #pragma once
 
-#include "common.h"
+#include "Common.h"
 
+/*
+	Deprecated soon... 
+*/
 
 const int MAX_RESERVE = 1000;
 
@@ -92,5 +95,6 @@ public:
 		return terminated_array_[num_elements_ - 1 + ix_from_last];
 	}
 };
+
 
 // end of file

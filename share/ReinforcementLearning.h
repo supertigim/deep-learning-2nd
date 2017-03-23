@@ -1,6 +1,11 @@
 #pragma once
 
 #include "RLMemory.h"
+#include "Replay.h"
+
+/*
+	Deprecated soon... 
+*/
 
 class ReinforcementLearning {
 public:
@@ -12,6 +17,7 @@ public:
 	
 	network<sequential> nn_;
 	RLMemory memory_;
+	Replay replay_;
 
 	vec_t old_input_vector_;
 public:
@@ -22,6 +28,8 @@ public:
 	void trainRewardMemory();
 	void trainRandomReplay(int minibatch);
 	void trainReward(const int ix_from_end);
+
+	void trainWithDQN(int minibatch);
 	
 	vec_t forward();
 	vec_t forward(const vec_t& state_vector);
