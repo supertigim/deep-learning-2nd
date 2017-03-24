@@ -115,9 +115,9 @@ float Breakout::updateSatus(float dt){
             //ball_vel_x_ += ((float)rand() / (float)RAND_MAX - DEFAULT_BALL_SPEED) * 0.2f;
 
             // for faster training
-            //if(trainig_mode_) {
-            //	restart(); 	
-            //}
+            if(trainig_mode_) {
+            	restart(); 	
+            }
 
             if( std::abs(ball_x_ - (paddle_x_ + (paddle_width_/2))) < 0.05f ){
                 //std::cout << "hit center";
