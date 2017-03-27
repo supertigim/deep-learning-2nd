@@ -157,8 +157,6 @@ void Car::updateSensor(const std::vector<std::unique_ptr<Object>>& obj_list, con
 				}
 			}
 		}
-		
-
 
 		if (flag == 1) {
 			sensor_lines.push_back(center);

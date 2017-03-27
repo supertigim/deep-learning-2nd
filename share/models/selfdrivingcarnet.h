@@ -13,6 +13,8 @@ namespace TDNN_Models {
     //const int input_nums_ = 13;
     //const int output_nums_ = 3;
 
+	assert(input_num > 0 && output_num > 0);
+
 	const int fc1_n_c = input_num ;
 	const int fc2_n_c = input_num ;
 	const int fc3_n_c = input_num ;
@@ -21,7 +23,7 @@ namespace TDNN_Models {
 		<< fully_connected_layer<leaky_relu>(fc1_n_c,fc2_n_c) 
 		<< fully_connected_layer<leaky_relu>(fc2_n_c,fc3_n_c) 
 		<< fully_connected_layer<leaky_relu>(fc3_n_c,fc3_n_c) 
-		<< fully_connected_layer<leaky_relu>(fc3_n_c,fc3_n_c) 
+		//<< fully_connected_layer<leaky_relu>(fc3_n_c,fc3_n_c) 
 		//<< fully_connected_layer<softmax>(fc3_n_c,num_game_actions_);
 		<< fully_connected_layer<leaky_relu>(fc3_n_c,output_num);
 	} 
@@ -31,6 +33,7 @@ namespace TDNN_Models {
 								const int& input_num,
 		  						const int& output_num){
 
+	assert(input_num > 0 && output_num > 0);
     //const int input_nums_ = 13;
     //const int output_nums_ = 3;
 
@@ -41,6 +44,7 @@ namespace TDNN_Models {
 	nn	<< fully_connected_layer<tan_h>(input_num,fc1_n_c) 
 		<< fully_connected_layer<tan_h>(fc1_n_c,fc2_n_c) 
 		<< fully_connected_layer<tan_h>(fc2_n_c,fc3_n_c) 
+		<< fully_connected_layer<tan_h>(fc2_n_c,fc3_n_c) 
 		<< fully_connected_layer<tan_h>(fc3_n_c,output_num);
 	} 
 
@@ -49,6 +53,7 @@ namespace TDNN_Models {
 								const int& input_num,
 		  						const int& output_num){
 
+	assert(input_num > 0 && output_num > 0);
     //const int input_nums_ = 13;
     //const int output_nums_ = 3;
 
@@ -56,13 +61,14 @@ namespace TDNN_Models {
 	const int fc2_n_c = input_num ;
 	const int fc3_n_c = input_num ;
 
-	nn	<< fully_connected_layer<relu>(input_num,fc1_n_c) 
-		<< fully_connected_layer<relu>(fc1_n_c,fc2_n_c) 
-		<< fully_connected_layer<relu>(fc2_n_c,fc3_n_c) 
-		<< fully_connected_layer<relu>(fc3_n_c,fc3_n_c) 
-		<< fully_connected_layer<relu>(fc3_n_c,fc3_n_c) 
-		//<< fully_connected_layer<softmax>(fc3_n_c,num_game_actions_);
-		<< fully_connected_layer<relu>(fc3_n_c,output_num);
+	nn	<< fully_connected_layer<elu>(input_num,fc1_n_c) 
+		<< fully_connected_layer<elu>(fc1_n_c,fc2_n_c) 
+		<< fully_connected_layer<elu>(fc2_n_c,fc3_n_c) 
+		<< fully_connected_layer<elu>(fc3_n_c,fc3_n_c) 
+		<< fully_connected_layer<elu>(fc3_n_c,fc3_n_c) 
+		//<< fully_connected_layer<elu>(fc3_n_c,fc3_n_c) 
+		//<< fully_connected_layer<softmax>(fc3_n_c,output_num);
+		<< fully_connected_layer<elu>(fc3_n_c,output_num);
 	}     
 
 }  // namespace TDNN_Models

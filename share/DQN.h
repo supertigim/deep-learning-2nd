@@ -3,7 +3,7 @@
 #include "Replay.h"
 
 const float DEFAULT_EPSILON = 0.20f;
-const float DEFAULT_LEARNING_RATE = 0.20f;
+const float DEFAULT_LEARNING_RATE = 0.95f;
 
 /**
  *   Deep Q-Network
@@ -24,6 +24,7 @@ public:
 	}
 
 	void printQValues(const vec_t& state_vector);
+	int replay_memory_size(){ return replay_.size();}
 
 protected:
 	network<sequential>& nn_;

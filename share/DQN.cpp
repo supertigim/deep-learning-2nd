@@ -18,9 +18,13 @@ void DQN::update(int batch_size){
 	std::vector<int> idx_vector;
 	replay_.getSampleIdxVector(idx_vector, batch_size);
 
-	for(int i = 0 ; i < idx_vector.size(); ++i){
+	int i ;
+	for( i = 0 ; i < idx_vector.size(); ++i){
 		vec_t s1, s2;
-		if(!replay_.getState(idx_vector[i],s1,s2)) continue;
+		if(!replay_.getState(idx_vector[i],s1,s2)){
+			--batch_size;
+			continue;
+		}
 		label_t action;
 		replay_.getAction(idx_vector[i],action);
 		float reward;
@@ -44,16 +48,16 @@ void DQN::update(int batch_size){
 		desired_output_vector.push_back(desired_output);
 	}
 
-	//size_t training_batch = 1;	//batch_size;
-	//size_t epochs = 1;			//batch_size; //to make it faster... but why... 
+	size_t training_batch = 1;//batch_size;	//batch_size;
+	size_t epochs = 1;//batch_size;			//batch_size; //to make it faster... but why... 
 
-	//if(training_batch > 1){
-	//  	optimizer.alpha *=
-	//    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
-	//}
+	if(training_batch > 1){
+	  	optimizer.alpha *=
+	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
+	}
 
-	//nn_.fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
-	nn_.fit<mse>(optimizer, train_input_vector, desired_output_vector);
+	nn_.fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
+	//nn_.fit<mse>(optimizer, train_input_vector, desired_output_vector);
 }
 
 label_t DQN::selectAction(const vec_t& state, float epsilon){

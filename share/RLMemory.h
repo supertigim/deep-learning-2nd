@@ -6,7 +6,7 @@
 	Deprecated soon... 
 */
 
-const int MAX_RESERVE = 1000;
+const int MAX_RESERVE = 50000;
 
 class RLMemory {
 public:

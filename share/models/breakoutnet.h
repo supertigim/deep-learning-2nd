@@ -13,6 +13,8 @@ namespace TDNN_Models {
   						const int& output_nums){
 
 
+		assert(height > 0 && width > 0 && input_channel_nums > 0 && output_nums > 0 );
+
 		typedef convolutional_layer<tan_h> conv;
 		typedef max_pooling_layer<relu> pool;
 

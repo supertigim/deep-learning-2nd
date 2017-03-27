@@ -1,5 +1,7 @@
 .DS_Store
 
+reference
+
 build
 .build_debug/*
 .build_release/*
