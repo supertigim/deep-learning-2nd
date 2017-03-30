@@ -2,8 +2,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "models/selfdrivingcarnet.h"
 
+const int CAR_PLAYED_NUM = 3;
+
 SelfDrivingWorld::SelfDrivingWorld()
-	:is_training_(false)
+	:is_training_(0)
 {}
 
 void SelfDrivingWorld::initialize() {
@@ -11,17 +13,22 @@ void SelfDrivingWorld::initialize() {
 	Scene::init();
 
 	// Create number of AI cars 
-	createAICars(3);
+	createAICars(CAR_PLAYED_NUM);
 
 	// Make neural network
-	TDNN_Models::self_driving_car_alt2_net(nn_,
-	//TDNN_Models::self_driving_car_net(nn_, 
+	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
+	TDNN_Models::self_driving_car_alt2_net(*nn,
+	//TDNN_Models::self_driving_car_net(*nn, 
 								AICar::NETWORK_INPUT_NUM * AICar::INPUT_FRAME_CNT,
 								AICar::ACT_MAX);
 
+	dqn_ = std::make_unique<DDQN>();
+	dqn_->initialize(nn);
+
 	// Create World
-	createScene_RandomObstacles();
+	//createScene_RandomObstacles();
 	//createScene_Basic();
+	createScene_Road();
 
 	// Camera matrix
 	View_ = glm::lookAt(
@@ -38,9 +45,46 @@ void SelfDrivingWorld::initialize() {
 void SelfDrivingWorld::createAICars(int nums){
 
 	for(int i = 0; i < nums; ++i){
-		AICar *car = new AICar(i);		
+		AICar *car = new AICar(1 << i);		
 		car->initialize();
 		car_list_.push_back(std::move(std::unique_ptr<AICar>(car)));
+	}
+}
+
+void SelfDrivingWorld::createScene_Road(){
+	const float	world_center_x = 0.5f,
+			world_center_y = 0.5,
+			world_radius = 1.2f;
+	
+	// outer barrier
+	{
+		SquareObj* box = new SquareObj();
+		box->update(glm::vec3(world_center_x, world_center_y, 0.0f), world_radius, world_radius);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(box)));
+	}
+
+	{
+		SquareObj* box = new SquareObj();
+		box->update(glm::vec3(world_center_x - 0.47f, world_center_y + 0.50f, 0.0f), 0.3f, 0.3f);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(box)));
+	}
+
+	{
+		SquareObj* box = new SquareObj();
+		box->update(glm::vec3(world_center_x - 0.47f, world_center_y - 0.50f, 0.0f), 0.3f, 0.3f);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(box)));
+	}
+
+	{
+		SquareObj* box = new SquareObj();
+		box->update(glm::vec3(world_center_x + 0.47f, world_center_y + 0.50f, 0.0f), 0.3f, 0.3f);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(box)));
+	}
+
+	{
+		SquareObj* box = new SquareObj();
+		box->update(glm::vec3(world_center_x + 0.47f, world_center_y - 0.50f, 0.0f), 0.3f, 0.3f);
+		obj_list.push_back(std::move(std::unique_ptr<Object>(box)));
 	}
 }
 
@@ -151,14 +195,6 @@ void SelfDrivingWorld::render(){
 		car_list_[i]->render(MatrixID_, Projection_ * View_);
 	}
 
-	// draw
-	//car_.body_.drawLineLoop(MatrixID_, Projection_ * View_);
-	//car_.sensing_lines.drawLineLoop(MatrixID_, Projection_ * View_);
-
-	//for(int i = 0 ; i <  car_.passed_pos_obj_list_.size(); ++i ) {
-	//	car_.passed_pos_obj_list_[i]->drawLineLoop(MatrixID_, Projection_ * View_);
-	//}
-
 	//for (auto itr : obj_list) // this doesn't work with unique ptr
 	for (int i = 0; i < obj_list.size(); i++){
 		obj_list[i]->drawLineLoop(MatrixID_, Projection_ * View_);
@@ -191,18 +227,27 @@ bool SelfDrivingWorld::handleKeyInput(){
 
 	// training mode change key input
 	static bool key_reset_flag = true;
-	if (getKeyPressed(GLFW_KEY_SPACE) == true) {
+	if (getKeyPressed(GLFW_KEY_SPACE) == true || 
+		getKeyPressed(GLFW_KEY_A) == true) {
 
 		if(key_reset_flag == true) {
-			is_training_ = !is_training_;
+			if(!is_training_){
+				if(getKeyPressed(GLFW_KEY_A) == true)	is_training_ = INT_MAX;
+				else									is_training_ = 1 << uniform_rand(0, (int)car_list_.size()-1);
+				std::cout << "Back ground training mode: " << is_training_ << endl;
+			}
+			else {
+				is_training_ = 0;
+				std::cout << "Interactive rendering mode" << endl;
+			} 
 
 			key_reset_flag = false;
 
 			if (is_training_) {
-				std::cout << "Back ground training mode" << endl;
+				
 			}
 			else {
-				std::cout << "Interactive rendering mode" << endl;
+				
 			}
 		}
 	}
@@ -223,8 +268,7 @@ void SelfDrivingWorld::run() {
 		for(int i = 0 ; i < car_list_.size() ; ++i){
 			car_list_[i]->drive();
 		}
-
-		if(!is_training_)
+		//if(!is_training_)
 			render();
 	}
 	clear();

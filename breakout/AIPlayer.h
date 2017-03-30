@@ -2,7 +2,6 @@
 
 #include "Breakout.h"
 #include "Player.h"
-#include "ReinforcementLearning.h"
 #include "DQN.h"
 
 //const int DEF_CONV_CHANNEL_NUM = 5;
@@ -14,24 +13,19 @@ public:
 
 	void keyProcess(char ch);
 	void run();
-	void run_old();
 	void initialize();
-
-protected:
-	const int getSelectedDir(const vec_t& q_values);
-	void initMemory();
 
 protected:
 	Breakout* game_;
 	ReinforcementLearning rl_;
 
 	std::unique_ptr<DQN> dqn_;
-	network<sequential> nn_;
-
-
+	//network<sequential> nn_;
+	Replay replay_;
 
 	bool is_training_;
 	float epsilon_;
+	int input_frame_count_;
 };
 
 // end of file

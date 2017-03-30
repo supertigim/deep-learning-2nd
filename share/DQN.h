@@ -3,34 +3,43 @@
 #include "Replay.h"
 
 const float DEFAULT_EPSILON = 0.20f;
+const float MAX_EPSILON = 0.40f;
+const float MIN_EPSILON = 0.10f;
+const float EPSILON_DECAY_RATE = 0.9999f;
 const float DEFAULT_LEARNING_RATE = 0.95f;
 
 /**
  *   Deep Q-Network
  */
-class DQN: public learnig_algorithm {
+class DQN {
 public:
-	explicit DQN(network<sequential>& nn, 
-				const int& input_size, 
-				const int& input_frame_count, 
-				const int& output_nums);
+	DQN();
 	~DQN(){}
+	virtual void initialize(std::shared_ptr<network<sequential>>& nn_ptr);
 	void setLearnigRate(float gamma){gamma_ = gamma;}
-	void update(int batch_size);
-	label_t selectAction(const vec_t& state, float epsilon = DEFAULT_EPSILON);
+	virtual void update(Replay& replay, int batch_size);
+	label_t selectAction(const vec_t& state, bool is_greedy = false);
 	vec_t forward(const vec_t& state_vector);
-	void addTransition(const Transition& transition){
-		replay_.push_back(transition);
-	}
-
 	void printQValues(const vec_t& state_vector);
-	int replay_memory_size(){ return replay_.size();}
 
 protected:
-	network<sequential>& nn_;
-	Replay replay_;
+	std::shared_ptr<network<sequential>> nn_ptr_;
 	float gamma_;
-	int output_nums_;
+	float epsilon_;
+};
+
+
+/**
+ *   Double Deep Q-Network
+ */
+class DDQN: public DQN {
+public:
+	DDQN();
+	~DDQN(){}
+	void update(Replay& replay, int batch_size);
+	void initialize(std::shared_ptr<network<sequential>>& nn_ptr);
+protected:
+	std::shared_ptr<network<sequential>> target_nn_ptr_;
 };
 
 // end of file

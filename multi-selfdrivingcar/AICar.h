@@ -19,8 +19,7 @@ public:
 	static float INPUT_FRAME_CNT;
 
 protected:
-	int ID_;
-	//SquareObj body_;
+	const int ID_;
 	LineObj sensing_lines;
 	
 	glm::vec3 dir_, vel_;
@@ -32,23 +31,25 @@ protected:
 	float fric;
 	float sensing_radius;
 
-	std::vector<F> distances_from_sensors_;
 	int sensor_min, sensor_max, sensor_di;
+	std::vector<float> distances_from_sensors_;
 	std::deque<std::unique_ptr<Object>> passed_pos_obj_list_;
 	glm::vec3 passed_pos_; 
 	float car_length_;
 	float direction_degree_;
+	//float keep_turning_;
 
 	// for DQN 
-	std::unique_ptr<DQN> dqn_;
 	int loop_count_ = 0;
 	int loop_count_max_ = 30;
 	int batch_size_ = 10;
 	int training_threshold_nums_ = 100;
 	std::deque<vec_t> past_states_;
+	Replay replay_;
 
 	float reward_sum_;
 	float reward_max_;
+	
 public:
 	AICar(int id);
 	void initialize();
@@ -62,9 +63,8 @@ public:
 	void render(const GLint& MatrixID, const glm::mat4 vp);
 
 	void processInput(const int& action);
-protected:
-	void setTrainingAlgorithm();
 
+protected:
 	void turnLeft();
 	void turnRight();
 	void accel();
@@ -78,7 +78,7 @@ protected:
 	void calculateRewardAndcheckCollision(float& reward, int& is_terminated);
 	void getStateBuffer(vec_t& t);
 
-	//void update(const glm::vec3& center, const F& half_dx, const F& half_dy, float degree);
+	void makeImage();
 };
 
 // end of file

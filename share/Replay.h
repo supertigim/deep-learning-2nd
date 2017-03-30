@@ -21,6 +21,8 @@ public:
 	:max_memory_size_(DEF_MAX_REPLAY_CNT)
 	,input_frame_count_(DEF_INPUT_FRAME_CNT)
 	,input_size_(0)
+	//,high_td_(INT_MIN)
+	//,low_td_(INT_MAX)
 	{}
 	~Replay() {}
 
@@ -47,6 +49,10 @@ public:
 
 	void push_back(const Transition& t){
 		assert(input_size_ != 0);
+		
+		//float td = std::get<2>(t);
+		//if( low_td_ > td) low_td_ = td;
+		//else if( high_td_ < td) high_td_ = td;
 
 		//memory_.push_back(std::move(t));
 		memory_.push_back(t);
@@ -68,6 +74,26 @@ public:
 		}
 
 		v.reserve(size);
+/*
+		int count = 0;
+		int found = 0;
+		float mid_value = (high_td_+low_td_)/2;
+		while (count < memory_.size() &&  found < size ) {
+			const int idx = uniform_rand((int)(0 + (input_frame_count_ - 1)) , (int)(memory_.size() - 1));
+			
+			float td = std::get<2>(memory_[idx]);
+			if( td < mid_value ){
+				v.push_back(idx);
+				++found;
+			}
+			++count;
+		}
+
+		for (int i = found; i < size; ++i) {
+			const int idx = uniform_rand((int)(0 + (input_frame_count_ - 1)) , (int)(memory_.size() - 1));
+			v.push_back(idx);
+		}
+*/
 		for (auto i = 0; i < size; ++i) {
 			const int idx = uniform_rand((int)(0 + (input_frame_count_ - 1)) , (int)(memory_.size() - 1));
 			v.push_back(idx);
@@ -123,6 +149,7 @@ protected:
 	int max_memory_size_;
 	int input_size_;
 	int input_frame_count_;
+	//float high_td_, low_td_;
 };
 
 // end of file
