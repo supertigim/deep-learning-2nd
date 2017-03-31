@@ -17,7 +17,6 @@ public:
 
 protected:
 	Breakout* game_;
-	ReinforcementLearning rl_;
 
 	std::unique_ptr<DQN> dqn_;
 	//network<sequential> nn_;
