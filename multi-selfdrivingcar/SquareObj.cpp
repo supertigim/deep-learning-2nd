@@ -7,7 +7,6 @@ SquareObj::SquareObj(const glm::vec3& center, const F& half_dx, const F& half_dy
 
 void SquareObj::update(const glm::vec3& center, const F& half_dx, const F& half_dy)
 {
-	glDeleteBuffers(1, &vertexbuffer);	// free memory !!!!!!!!!!!!!!!!
 	center_ = center;
 
 	x_min_ = center.x - half_dx;
@@ -20,7 +19,11 @@ void SquareObj::update(const glm::vec3& center, const F& half_dx, const F& half_
 	const glm::vec3 v2(center.x + half_dx, center.y + half_dy, center.z);
 	const glm::vec3 v3(center.x - half_dx, center.y + half_dy, center.z);
 
-	vertices.clear();
+	if(vertices.size()){
+		glDeleteBuffers(1, &vertexbuffer);	// free memory !!!!!!!!!!!!!!!!
+		vertices.clear();	
+	}
+
 	vertices.push_back(v0);
 	vertices.push_back(v1);
 	vertices.push_back(v2);
