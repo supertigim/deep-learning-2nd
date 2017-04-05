@@ -1,4 +1,6 @@
+## Notice  
 
+This project moves to [self driving vehicles](https://github.com/supertigim/self-driving-vehicles) repository, because I want to preserve old structure here.   
 
 **[Video](https://www.youtube.com/watch?v=lzlVKUNpIoc)**  
 
