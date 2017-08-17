@@ -10,6 +10,12 @@ You can flip the scene between training mode and normal mode by pressing space b
   
 ![](https://preview.ibb.co/dOACMa/multi_self_driving_cars.png)  
 
+## Build Envrionment  
+
+See CMakeLists.txt and change for your environment. Oherwise, You can refer to [this page](https://github.com/supertigim/autonomous-vehicles/tree/master/opengl-env) that has all dependencies are in external folder.  
+
+OpenGL related dependancies are quite annoying to me. Sorry for my unconvenient description. :(  
+  
 ## How to build  
 
 	$ mkdir build 
