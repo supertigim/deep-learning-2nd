@@ -4,7 +4,11 @@
 #include <GL/glew.h>
 #include <vector>
 #include <deque>
+#include <memory>
 
+/**
+ *   Object Class 
+ */
 class Object
 {
 public:

@@ -3,6 +3,9 @@
 
 #include "Object.h"
 
+/**
+ *   Line Object Class 
+ */
 class LineObj : public Object
 {
 public:

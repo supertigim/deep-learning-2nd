@@ -1,8 +1,26 @@
 ## Introduction  
+  
+[All previous neural net studies](https://github.com/supertigim/deep.learning) has been transformed from my own neural network codes to tiny-dnn which is c++14 based open source. Please make sure that all applications here are tested on mac os environment.  
 
-[All previous neural net studies](https://github.com/supertigim/deep.learning) are rewritten by using tiny-dnn. It will help me to test an advanced algorithm easily. Also, there is python source code with tensorflow in python-tf directory which comes from online lectures by professor [Sunghun Kim](http://www.cse.ust.hk/~hunkim/) at HKUST.
+## Cloning and build  
 
-## Changes in tiny-DNN  
+	git clone --recursive https://github.com/supertigim/deep-learning-2nd.git  
+	  
+	// to make tiny-dnn the latest version  
+	git submodule foreach git pull origin master   
+	
+Go to sub folders like cnn, and xor-problem, and read the README.md to build each application.     
+  
+## Changes in tiny-DNN   
+
+Don't change unless any improvement happens in your environment   
+
+**Uncomment defines in config.h**   
+
+	#define CNN_USE_SSE  
+	#define CNN_USE_OMP  
+	#define CNN_USE_GCD  
+
 
 **Random generator in random.h**  
 	
@@ -28,14 +46,6 @@
 		std::random_device rd_;	// ADD!!!  
 	};
 
-**Uncomment defines in config.h**   
-
-	#define CNN_USE_SSE  
-	#define CNN_USE_OMP  
-	#define CNN_USE_GCD  
-	#define CNN_USE_EXCEPTIONS  
-	#define CNN_USE_STDOUT  
-  
 ## Reference  
 
 1.[tiny-dnn online manual](http://tiny-dnn.readthedocs.io/en/latest/index.html)  

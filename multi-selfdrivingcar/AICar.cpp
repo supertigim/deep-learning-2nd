@@ -108,8 +108,7 @@ void AICar::turnLeft() {
 	direction_degree_ += turn_coeff_;
 	if(direction_degree_ > 360.0f) direction_degree_ -= 360.0f;
 
-	F x = 1.0;
-	if (glm::dot(vel_, dir_) < 0.0) x = -1.0;
+	float x = (glm::dot(vel_, dir_) < 0.0)? -1.0: 1.0;
 	vel_ = dir_ * glm::sqrt(glm::dot(vel_, vel_)) * x;
 }
 
@@ -125,8 +124,7 @@ void AICar::turnRight() {
 	direction_degree_ -= turn_coeff_;
 	if(direction_degree_ < 0) direction_degree_ = 360.0f - direction_degree_;
 
-	F x = 1.0;
-	if (glm::dot(vel_, dir_) < 0.0) x = -1.0;
+	float x = (glm::dot(vel_, dir_) < 0.0)? -1.0: 1.0;
 	vel_ = dir_ * glm::sqrt(glm::dot(vel_, vel_)) * x;
 }
 
@@ -252,6 +250,7 @@ void AICar::createSkidMark(const int& nums){
 }
 
 void AICar::calculateRewardAndcheckCollision(float& reward, int& is_terminated){
+	/*
 	is_terminated = 0;
 	reward = 0.0f;
 	float sensor_reward = 0.0f;
@@ -272,6 +271,22 @@ void AICar::calculateRewardAndcheckCollision(float& reward, int& is_terminated){
 		//		+ sensor_reward * 0.5;
 		//reward = std::min(1.0f , reward);
 	}
+	*/
+	float head_sensor_stat = 1.0f;
+	float collision_warning = 1.0f;
+	for (int i = sensor_min, count = 0; i <= sensor_max; i += sensor_di, ++count) {
+		if ( -10 <= i && i <= 10){
+			head_sensor_stat = std::min (head_sensor_stat, distances_from_sensors_[count]);
+		}	
+		collision_warning = std::min (collision_warning, distances_from_sensors_[count]);
+	}
+
+	// 속도가 빠를 수록, 정면 센서에 장애물이 없을 수록 보상 증가 
+	if(collision_warning <= 0.5f)	reward += collision_warning - 1.0f;
+	reward += getSpeed(); 	// keeping moving is reward
+	if(reward > 0) reward += head_sensor_stat/2;				// addition reward if head sersors do not detect any obstacle
+	reward = floorf(reward * 10) / 10.0f;
+	
 	
 	if (isTerminated()) {
 		reward = -2.0f;	// punishment!!
@@ -300,11 +315,10 @@ bool AICar::isTerminated(){
 // range -1.0f ~ 1.0f
 float AICar::getSpeed(){
 	float ret = 110.0f * glm::distance(previous_pos_, center_ );
-	if (ret < 0.1f) 				ret = 0.0f;		// 빙글 빙글 돌때 찾기 위해 넣은 값
+	if (ret < 0.1f) 				ret = 0.0f;		// 빙글 빙글 도는 상태를 막기 위해
 	if (glm::dot(vel_, dir_) < 0.0) ret *= -1.0f;	// 방향 factor 
 	if (ret < -1.0f) 				ret = -1.0f;	// 최소 -1.0
 	if (ret > 1.0f) 				ret = 1.0f;		// 최대 +1.0
-	//std::cout << "Speed: " << ret << endl;
 	return ret ;
 }
 

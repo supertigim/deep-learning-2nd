@@ -3,6 +3,7 @@ project( CONVOLUTIONAL_NEURAL_NETWORK )
 
 #ADD_SUBDIRECTORY( "../core" "${CMAKE_CURRENT_BINARY_DIR}/lib_build" )
 INCLUDE_DIRECTORIES( ../tiny-dnn )
+INCLUDE_DIRECTORIES( ../share )
 
 add_definitions(-DUSE_AVX)
 

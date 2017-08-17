@@ -1,10 +1,7 @@
 #include <iostream>
 #include "tiny_dnn/tiny_dnn.h"
-#include "../common.h"
+#include "common.h"
 #include <ctime>
-
-using namespace tiny_dnn;
-using namespace tiny_dnn::activation;
 
 // input image size 
 const int width = 10;
@@ -19,8 +16,6 @@ const int fc_n_c = width * height;	// number of neurons on between fully connect
 	color range in tiny-dnn : -1.0 ~ 1.0  (NOT!!! 0 ~ 255) 
  */
 const float dotted = 0.1f;
-
-typedef convolutional_layer<activation::identity> conv;
 
 // make convolitional neural network  
 // 2 cnn / 2 fcnn
@@ -38,15 +33,15 @@ void construct_net(network<sequential>& nn) {
 	const int c2_kernel_size = 5;		// 5*5 kernel 
 	const int c2_fmaps = 2;				// feature map (output channel)
 
-	nn	<< conv<relu>(width, height, c1_kernel_size, c1_input_channel
-					,c1_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type)
-		<< conv<relu>(width, height, c2_kernel_size,c1_fmaps
-					,c2_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type)
-		<< fully_connected_layer<relu>(width*height*c2_fmaps, fc_n_c)
-		<< fully_connected_layer<relu>(fc_n_c, output_dims);
+	nn	<< conv(width, height, c1_kernel_size, c1_input_channel
+					,c1_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type) << relu()
+		<< conv(width, height, c2_kernel_size,c1_fmaps
+					,c2_fmaps, padding::same, true /*add bias*/, 1/*w-stride*/, 1/*h-stride*/, backend_type) << relu()
+		<< fully_connected_layer(width*height*c2_fmaps, fc_n_c, true, backend_type) << relu()
+		<< fully_connected_layer(fc_n_c, output_dims, true, backend_type) << relu();
 }
 
-float getLinfNormError(const vec_t& pred, const vec_t& desired){
+float getPredictionError(const vec_t& pred, const vec_t& desired){
 
 	float temp = 0.0f;
 
@@ -60,6 +55,11 @@ int main(int agrc, char** argv){
 
 	network<sequential> nn;
 	construct_net(nn);
+
+	//change layer initialization
+	nn.weight_init(weight_init::he());
+	nn.bias_init(weight_init::constant(1.0));
+
 	gradient_descent optimizer;
 
 	vec_t desired(output_dims, 0.0f);
@@ -103,7 +103,7 @@ int main(int agrc, char** argv){
 
 			vec_t result = nn.predict(input_image);
 
-			const float linferror = getLinfNormError(result, desired);
+			const float linferror = getPredictionError(result, desired);
 			max_error = std::max(linferror, max_error);
 
 			// Image buffer reset 

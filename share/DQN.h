@@ -1,3 +1,6 @@
+/*
+    Copied and Pasted by Jay (JongYoon) Kim, jyoon95@gmail.com 
+*/
 #pragma once 
 
 #include "Replay.h"
@@ -14,7 +17,7 @@ const float DEFAULT_LEARNING_RATE = 0.95f;
 class DQN {
 public:
 	DQN();
-	~DQN(){}
+	virtual ~DQN(){}
 	virtual void initialize(std::shared_ptr<network<sequential>>& nn_ptr);
 	void setLearnigRate(float gamma){gamma_ = gamma;}
 	virtual void update(Replay& replay, int batch_size);
@@ -23,7 +26,8 @@ public:
 	void printQValues(const vec_t& state_vector);
 
 protected:
-	std::shared_ptr<network<sequential>> nn_ptr_;
+	//std::shared_ptr<network<sequential>> nn_ptr_;
+	std::shared_ptr<tiny_dnn::network<tiny_dnn::sequential>> nn_ptr_;
 	float gamma_;
 	float epsilon_;
 };

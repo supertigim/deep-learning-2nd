@@ -1,6 +1,9 @@
+/*
+    Copied and Pasted by Jay (JongYoon) Kim, jyoon95@gmail.com 
+*/
 #pragma once 
 
-#include "Common.h"
+#include "common.h"
 
 const int DEF_MAX_REPLAY_CNT	= 5000;
 const int DEF_INPUT_FRAME_CNT	= 1;

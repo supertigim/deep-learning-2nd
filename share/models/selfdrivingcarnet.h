@@ -1,3 +1,6 @@
+/*
+    Copied and Pasted by Jay (JongYoon) Kim, jyoon95@gmail.com 
+*/
 #pragma once 
 
 using namespace tiny_dnn::activation;
@@ -5,6 +8,27 @@ using namespace tiny_dnn::layers;
 
 namespace TDNN_Models {
 
+	// Neural Network for Self Driving Car 
+	void self_driving_car_alt2_net(tiny_dnn::network<tiny_dnn::sequential> &nn, 
+								tiny_dnn::core::backend_t backend_type,
+								const int& input_num,
+		  						const int& output_num){
+
+		assert(input_num > 0 && output_num > 0);
+	    //const int input_nums_ = 13;
+	    //const int output_nums_ = 3;
+
+		const int fc1_n_c = (input_num+output_num)/3+1;
+		const int fc2_n_c = (input_num+output_num)/3+1;
+		const int fc3_n_c = (input_num+output_num)/3+1;
+
+		nn	<< fully_connected_layer(input_num,fc1_n_c, true, backend_type) << tan_h()
+			<< fully_connected_layer(fc1_n_c,fc2_n_c, true, backend_type)  << elu()
+			<< fully_connected_layer(fc2_n_c,fc3_n_c, true, backend_type) << elu()
+			<< fully_connected_layer(fc3_n_c,output_num, true, backend_type) << elu()
+			;
+		}
+/*
 	// Neural Network for Self Driving Car 
 	void self_driving_car_net(network<sequential>& nn, 
 								const int& input_num,
@@ -103,7 +127,7 @@ namespace TDNN_Models {
 			 << fully_connected_layer<relu>(height/4 * width/4 * n_fmaps2, n_fc, true, backend_type)
 			 << fully_connected_layer<leaky_relu>(n_fc, output_nums, true, backend_type);
 	}       
-
+*/
 }  // namespace TDNN_Models
 
 

@@ -1,9 +1,12 @@
 
 #pragma once
 
-#include "Common.h"
+#include "common.h"
 #include "Object.h"
 
+/**
+ *   Square Object Class 
+ */
 class SquareObj : public Object
 {
 public:
@@ -11,20 +14,13 @@ public:
 	using Object::vertexbuffer;
 	using Object::genVertexBuffer;
 
-	//Box<F> box_;
-
-	//union {
-	//	struct {T x_min_, y_min_,x_max_,y_max_;};
-	//	struct {T i_start_,j_start_,i_end_,j_end_;};
-	//};
-	F x_min_, y_min_,x_max_,y_max_;
-
 	SquareObj() {}
-	SquareObj(const glm::vec3& center, const F& half_dx, const F& half_dy);
+	SquareObj(const glm::vec3& center, const float& half_dx, const float& half_dy);
 
-	void update(const glm::vec3& center, const F& half_dx, const F& half_dy);
-
+	void update(const glm::vec3& center, const float& half_dx, const float& half_dy);
 	bool isInside(const glm::vec3& pt);
+protected:	
+	float x_min_, y_min_,x_max_,y_max_;
 };
 
 // end of file 

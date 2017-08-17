@@ -32,11 +32,17 @@ void AIPlayer::initialize(){
 	game_->flipBuffer();
 
 	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
+	tiny_dnn::core::backend_t backend_type = tiny_dnn::core::default_engine();
 	TDNN_Models::cl_breakout_net(*nn, 
+								backend_type,
 								game_->height(),
 								game_->width(), 
 								input_frame_count_, 
 								game_->getNumActions());
+
+	//change layer initialization
+	nn->weight_init(weight_init::he());
+	nn->bias_init(weight_init::constant(1.0));
 
 	dqn_ = std::make_unique<DDQN>();
 	dqn_->initialize(nn);

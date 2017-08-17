@@ -3,6 +3,7 @@ project( SOLVING_XOR_PROBLEM_WITH_CNN )
 
 #ADD_SUBDIRECTORY( "../core" "${CMAKE_CURRENT_BINARY_DIR}/lib_build" )
 INCLUDE_DIRECTORIES( ../tiny-dnn )
+INCLUDE_DIRECTORIES( ../share )
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14" )
 

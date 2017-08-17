@@ -1,9 +1,11 @@
-
 #pragma once
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+/**
+ *   Scene Class 
+ */
 class Scene
 {
 public:

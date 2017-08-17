@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "common.h"
 #include "ConsoleGL.h"
 
 const float DEFAULT_WALL_WIDTH = 0.05f;

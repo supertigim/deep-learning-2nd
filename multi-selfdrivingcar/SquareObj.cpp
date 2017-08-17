@@ -1,11 +1,11 @@
 #include "SquareObj.h"
 
-SquareObj::SquareObj(const glm::vec3& center, const F& half_dx, const F& half_dy)
+SquareObj::SquareObj(const glm::vec3& center, const float& half_dx, const float& half_dy)
 {
 	update(center, half_dx, half_dy);
 }
 
-void SquareObj::update(const glm::vec3& center, const F& half_dx, const F& half_dy)
+void SquareObj::update(const glm::vec3& center, const float& half_dx, const float& half_dy)
 {
 	center_ = center;
 

@@ -2,7 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "models/selfdrivingcarnet.h"
 
-const int CAR_PLAYED_NUM = 3;
+const int CAR_PLAYED_NUM = 7;	// number of cars driving on the world
 
 SelfDrivingWorld::SelfDrivingWorld()
 	:is_training_(0)
@@ -17,8 +17,10 @@ void SelfDrivingWorld::initialize() {
 
 	// Make neural network
 	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
+	tiny_dnn::core::backend_t backend_type = tiny_dnn::core::default_engine();
+	
 	TDNN_Models::self_driving_car_alt2_net(*nn,
-	//TDNN_Models::self_driving_car_net(*nn, 
+								backend_type,
 								AICar::NETWORK_INPUT_NUM * AICar::INPUT_FRAME_CNT,
 								AICar::ACT_MAX);
 
@@ -234,11 +236,11 @@ bool SelfDrivingWorld::handleKeyInput(){
 			if(!is_training_){
 				if(getKeyPressed(GLFW_KEY_A) == true)	is_training_ = INT_MAX;
 				else									is_training_ = 1 << uniform_rand(0, (int)car_list_.size()-1);
-				std::cout << "Back ground training mode: " << is_training_ << endl;
+				std::cout << "Training mode " << endl;
 			}
 			else {
 				is_training_ = 0;
-				std::cout << "Interactive rendering mode" << endl;
+				std::cout << "Normal mode" << endl;
 			} 
 
 			key_reset_flag = false;

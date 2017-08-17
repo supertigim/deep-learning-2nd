@@ -1,8 +1,25 @@
-## Notice  
+## Introduction    
 
-This project moves to [self driving vehicles](https://github.com/supertigim/self-driving-vehicles) repository, because I want to preserve old structure here.   
+This project has moved to [autonomous vehicles](https://github.com/supertigim/autonomous-vehicles) repository as tensorflow/keras provides more chance to adapt other algorithms and techonologies with ease. Anyhow, this application will be also updated along with that, because tiny-dnn is also a great asset for my future project. :)     
 
 **[Video](https://www.youtube.com/watch?v=lzlVKUNpIoc)**  
+      
+## How to do
+
+You can flip the scene between training mode and normal mode by pressing space bar for one car or **"a" for all**.  
+  
+![](https://preview.ibb.co/dOACMa/multi_self_driving_cars.png)  
+
+## How to build  
+
+	$ mkdir build 
+	$ cd build
+
+	build$ cmake ..
+	build$ make 
+
+	// run 
+	build$ ./multi_self_driving_car
 
 ## Reference  
 

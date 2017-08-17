@@ -2,6 +2,9 @@
 
 #include <glm/glm.hpp>
 
+/**
+ *   Collision Check Class 
+ */
 class Collision {
 public:
 	typedef typename glm::vec3 Point;

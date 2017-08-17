@@ -54,7 +54,13 @@ int Scene::init() {
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
+#ifdef _WIN32
+	programID = LoadShaders("..\\SimpleVertexShader.vertexshader", "..\\SimpleFragmentShader.fragmentshader");
+#elif _WIN64
+	programID = LoadShaders("..\\SimpleVertexShader.vertexshader", "..\\SimpleFragmentShader.fragmentshader");
+#else 
 	programID = LoadShaders("../SimpleVertexShader.vertexshader", "../SimpleFragmentShader.fragmentshader");
+#endif /* _WIN32 */
 
 	return 0;
 }

@@ -1,3 +1,6 @@
+/*
+    Copied and Pasted by Jay (JongYoon) Kim, jyoon95@gmail.com 
+*/
 #include "DQN.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +62,7 @@ void DQN::update(Replay& replay, int batch_size){
 	}
 
 	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
-	std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
+	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 }
 
 label_t DQN::selectAction(const vec_t& state, bool is_greedy){
@@ -164,7 +167,7 @@ void DDQN::update(Replay& replay, int batch_size){
 	}
 
 	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
-	std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
+	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 }	
 
 // end of file
