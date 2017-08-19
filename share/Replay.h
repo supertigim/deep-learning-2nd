@@ -76,7 +76,7 @@ public:
 			return false;
 		}
 
-		v.reserve(size);
+		//v.reserve(size);
 /*
 		int count = 0;
 		int found = 0;
@@ -97,11 +97,12 @@ public:
 			v.push_back(idx);
 		}
 */
-		for (auto i = 0; i < size; ++i) {
-			const int idx = uniform_rand((int)(0 + (input_frame_count_ - 1)) , (int)(memory_.size() - 1));
+		for (int i = 0; i < size; ++i) {
+			const int idx = uniform_rand((int)(0 + (input_frame_count_ - 1)) , (int)(memory_.size() - 2));
 			v.push_back(idx);
 		}
-				
+	
+		assert(v.size() == size);			
 		return true;
 	}
 

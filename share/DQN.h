@@ -8,7 +8,7 @@
 const float DEFAULT_EPSILON = 0.20f;
 const float MAX_EPSILON = 0.40f;
 const float MIN_EPSILON = 0.10f;
-const float EPSILON_DECAY_RATE = 0.9999f;
+const float EPSILON_DECAY_RATE = 0.99999f;
 const float DEFAULT_LEARNING_RATE = 0.95f;
 
 /**

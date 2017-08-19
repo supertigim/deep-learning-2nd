@@ -140,6 +140,7 @@ void DDQN::update(Replay& replay, int batch_size){
 		// get Q-values from s1 using Main Network 
 		vec_t double_q = nn_ptr_->predict(s1);
 
+		std::cout << "before:" << double_q[action] ;
 		// learning algorithm 	
 		if(!s2.size()){
 			double_q[action] = reward;
@@ -153,20 +154,24 @@ void DDQN::update(Replay& replay, int batch_size){
 			// 미리 구해둔 Q Value들(target_q)에서 위 인덱스의 값으로 MAX Q값을 얻는다. 
 			double_q[action] = reward + gamma_ * target_q[max_index];
 		}
+		std::cout << " after:" << double_q[action] << endl;
 		train_input_vector.push_back(s1);
 		desired_output_vector.push_back(double_q);
 		++cnt;
 	}
 
-	size_t training_batch = 1;		//cnt;
-	size_t epochs = 1;				//batch_size; //to make it faster... but why... 
+	size_t training_batch = batch_size;		//cnt;
+	size_t epochs = batch_size*3;						
 
 	if(training_batch > 1){
 	  	optimizer.alpha *=
-	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
+	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * 0.01f /*learning rate of optimizer*/);
 	}
 
-	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
+	//optimizer.alpha *= static_cast<tiny_dnn::float_t>(sqrt(training_batch) * 0.01f);
+
+	//std::cout << "batch_size:" << batch_size << " Input Size:" << train_input_vector.size() << " output Size:" << desired_output_vector.size() << endl;
+	nn_ptr_->fit</*cross_entropy*/mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
 	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 }	
 

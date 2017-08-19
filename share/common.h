@@ -13,6 +13,8 @@ using fconnected_layer = tiny_dnn::layers::fc;
 using conv = tiny_dnn::layers::conv;
 using pool = tiny_dnn::layers::ave_pool;
 using tan_h = tiny_dnn::activation::tanh;
+using softmax = tiny_dnn::softmax_layer;
+using relu = tiny_dnn::relu_layer;
 
 const char endl[] = "\n";
 
