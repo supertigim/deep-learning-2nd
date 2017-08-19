@@ -34,15 +34,16 @@ namespace TDNN_Models {
 		const int n_fc =height*2;		//< number of hidden units in fully-connected layer
 
 		nn	<< conv(height, width, kernel_size, input_channel_nums, n_fmaps, padding::same, true, 1, 1, backend_type)
-			 << relu()
 			 << pool(height, width, n_fmaps, 2)
-			 << conv(height/2, width/2, kernel_size, n_fmaps, n_fmaps2, padding::same, true, 1, 1, backend_type)
 			 << relu()
+			 << conv(height/2, width/2, kernel_size, n_fmaps, n_fmaps2, padding::same, true, 1, 1, backend_type)
 			 << pool(height/2, width/2, n_fmaps2, 2)
+			 << relu()
 			 << fully_connected_layer(height/4 * width/4 * n_fmaps2, n_fc, true, backend_type)
 			 << relu()
 			 << fully_connected_layer(n_fc, output_nums, true, backend_type)
-			 << leaky_relu()
+			 << elu() //leaky_relu()
+			 //<< softmax(output_nums)
 			 ;
 	}  
 

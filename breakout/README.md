@@ -1,6 +1,6 @@
 ## Introduction  
 
-Terminal based simple Breakout game with Convolutional Neural Network. With my old mac-pro, it needs to take at lease 30 minutes to see that the bar is moving to try to bounce the ball.  
+Terminal based simple Breakout game with Convolutional Neural Network. With my old mac-pro, it needs to take at lease 12 hours to see that the bar is moving to try to bounce the ball without missing.  
 
 ## How to build and run  
 

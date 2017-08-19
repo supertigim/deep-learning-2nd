@@ -109,7 +109,7 @@ void AIPlayer::run(){
 
 		if(is_training_){
 			replay_.push_back(transition); // store transition 	
-			if(count >= 10){
+			if(count >= 4){
 				dqn_->update(replay_, count);
 				count = 0;
 			}
