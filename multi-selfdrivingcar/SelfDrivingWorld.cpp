@@ -19,6 +19,10 @@ void SelfDrivingWorld::initialize() {
 	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
 	tiny_dnn::core::backend_t backend_type = tiny_dnn::core::default_engine();
 	
+		//change layer initialization
+	nn->weight_init(weight_init::he(3));
+	nn->bias_init(weight_init::constant(1.0));
+
 	TDNN_Models::self_driving_car_alt2_net(*nn,
 								backend_type,
 								AICar::NETWORK_INPUT_NUM * AICar::INPUT_FRAME_CNT,

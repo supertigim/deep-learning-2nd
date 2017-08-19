@@ -14,6 +14,8 @@ namespace TDNN_Models {
 								const int& input_num,
 		  						const int& output_num){
 
+		using input = tiny_dnn::layers::input;
+
 		assert(input_num > 0 && output_num > 0);
 	    //const int input_nums_ = 13;
 	    //const int output_nums_ = 3;
@@ -22,8 +24,10 @@ namespace TDNN_Models {
 		const int fc2_n_c = (input_num+output_num)/3+1;
 		const int fc3_n_c = (input_num+output_num)/3+1;
 
-		nn	<< fully_connected_layer(input_num,fc1_n_c, true, backend_type) << tan_h()
-			<< fully_connected_layer(fc1_n_c,fc2_n_c, true, backend_type)  << elu()
+		nn	<< input(input_num)
+			<< fully_connected_layer(input_num,fc2_n_c, true, backend_type)  << elu()
+			//<< fully_connected_layer(input_num,fc1_n_c, true, backend_type) << relu()
+			//<< fully_connected_layer(fc1_n_c,fc2_n_c, true, backend_type)  << relu()
 			<< fully_connected_layer(fc2_n_c,fc3_n_c, true, backend_type) << elu()
 			<< fully_connected_layer(fc3_n_c,output_num, true, backend_type) << elu()
 			;

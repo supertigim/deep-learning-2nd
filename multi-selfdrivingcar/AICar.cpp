@@ -10,14 +10,14 @@ float AICar::INPUT_FRAME_CNT;//	= 0.0f;
 AICar::AICar(int id) 
 		: ID_(id), car_length_(0.03f), fric(0.01f), turn_coeff_(2.0f), accel_coeff_(0.0001f), brake_coeff_(0.0003f)
 		, sensing_radius(0.25f), sensor_min(-170), sensor_max(180), sensor_di(10)//, keep_turning_(0.0f)
-		, loop_count_(0), loop_count_max_ (30), batch_size_(32), training_threshold_nums_(100), reward_sum_(0.0f), reward_max_(0.0f)
+		, loop_count_(0), loop_count_max_ (30), batch_size_(4), training_threshold_nums_(100), reward_sum_(0.0f), reward_max_(0.0f)
 {
 	for (int i = sensor_min; i <= sensor_max; i += sensor_di) {
 		distances_from_sensors_.push_back(i);
 	}
 	
 	// add Speed, Direction, position as additional inputs
-	NETWORK_INPUT_NUM = distances_from_sensors_.size() + 4;	
+	NETWORK_INPUT_NUM = distances_from_sensors_.size();// + 4;	
 	INPUT_FRAME_CNT = 1;
 
 	replay_.init(NETWORK_INPUT_NUM, INPUT_FRAME_CNT);
@@ -28,10 +28,10 @@ void AICar::getStateBuffer(vec_t& t){
 	std::copy(distances_from_sensors_.begin(), distances_from_sensors_.end(), t.begin());
 	int count = distances_from_sensors_.size();
 
-	t[count++] = getSpeed(); 
-	t[count++] = direction_degree_/360.0f;	// 넣을 필요 있는지 모르겠음 (범위: 0~1)
-	t[count++] = center_.x;
-	t[count++] = center_.y;
+	//t[count++] = getSpeed(); 
+	//t[count++] = direction_degree_/360.0f;	// 넣을 필요 있는지 모르겠음 (범위: 0~1)
+	//t[count++] = center_.x;
+	//t[count++] = center_.y;
 }
 
 // reset car status until new position is good enough to do new episode 
@@ -289,7 +289,7 @@ void AICar::calculateRewardAndcheckCollision(float& reward, int& is_terminated){
 	
 	
 	if (isTerminated()) {
-		reward = -2.0f;	// punishment!!
+		reward = -1.0f;	// punishment!!
 		is_terminated = 1;	// terminal 
 		initialize();
 	}

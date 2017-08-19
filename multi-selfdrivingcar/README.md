@@ -1,6 +1,8 @@
 ## Introduction    
 
-This project has moved to [autonomous vehicles](https://github.com/supertigim/autonomous-vehicles) repository as tensorflow/keras provides more chance to adapt other algorithms and techonologies with ease. Anyhow, this application will be also updated along with that, because tiny-dnn is also a great asset for my future project. :)     
+This project has moved to [autonomous vehicles](https://github.com/supertigim/autonomous-vehicles) repository as tensorflow/keras provides more chance to adapt other algorithms and techonologies with ease. Anyhow, this application will be also updated along with that, because tiny-dnn is also a great asset for my future project. :)  
+
+Training speed is not fast, and it takes about 10 minutes to see autonomous cars with no collision.     
 
 **[Video](https://www.youtube.com/watch?v=lzlVKUNpIoc)**  
       
