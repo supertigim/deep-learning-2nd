@@ -5,13 +5,8 @@
 
 #include "common.h"
 
-const int DEF_MAX_REPLAY_CNT	= 5000;
+const int DEF_MAX_REPLAY_CNT	= 500;
 const int DEF_INPUT_FRAME_CNT	= 1;
-
-using Transition = std::tuple<vec_t,	// input data
-							label_t,	// action
-							float,		// reward
-							int>;		// is terminate ? (1 if terminated)
 
 /**
  *   Replay class 

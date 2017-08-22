@@ -1,6 +1,3 @@
-/*
-    Copied and Pasted by Jay (JongYoon) Kim, jyoon95@gmail.com 
-*/
 #include "DQN.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,26 +14,80 @@ void DQN::initialize(std::shared_ptr<network<sequential>>& nn_ptr){
 	nn_ptr_ = std::move(nn_ptr);
 }
 
-void DQN::update(Replay& replay, int batch_size){
+label_t DQN::selectAction(const vec_t& state, bool is_greedy){
+	
+	if(!is_greedy) {
+		if(bernoulli(MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * epsilon_)){
+			epsilon_ *= epsilon_;
+			return (label_t)uniform_rand(0, (int)nn_ptr_->out_data_size() -1);
+		}
+	}
+	else {
+		//std::cout << "MAX OUPUT: " << ((int)nn_ptr_->out_data_size() -1) << endl;
+		// for natural movement when not training 
+		if(bernoulli(0.05)){
+			return (label_t)uniform_rand(0, (int)nn_ptr_->out_data_size() -1);
+		}	
+	}
+	
+	//std::cout << state.size() << "<- state size in select action" << endl;
+	return nn_ptr_->predict_label(state);
+	//vec_t q = nn_ptr_->predict(state);
+	//return getMaxQIdx(q);
+}
+
+void DQN::printQValues(const vec_t& state_vector){
+	vec_t qvalues = nn_ptr_->predict(state_vector);
+
+	for(int i = 0; i < (int)nn_ptr_->out_data_size(); ++i){
+		std::cout << qvalues[i] << " | ";
+	}
+	std::cout << endl;
+}
+
+float DQN::getTD(label_t& action, float& reward, vec_t& s1, vec_t& s2){
+	vec_t q = nn_ptr_->predict(s1);
+	vec_t target_q = nn_ptr_->predict(s2);
+	return std::abs(q[action] - (reward + gamma_ * target_q[action]));
+}
+
+float DQN::getMaxQ(vec_t& q){
+	assert(q.size() > 0);
+	float ret = q[0];
+	for(int i = 1 ; i < (int)nn_ptr_->out_data_size(); ++i){
+		ret = std::max(ret, q[i]);
+	}
+	return ret;
+}
+
+label_t DQN::getMaxQIdx(vec_t& q){
+	assert(q.size() > 0);
+	label_t ret = 0;
+	float maxq = q[0];
+	for(int i = 1 ; i < (int)nn_ptr_->out_data_size(); ++i){
+		if(maxq < q[i]){
+			maxq = q[i];
+			ret = i;
+		}
+	}
+	return ret;
+}
+
+void DQN::update(PEReplay& replay, int batch_size){
 	std::vector<vec_t> train_input_vector, desired_output_vector;
+	std::vector<label_t> target_label;
 	//gradient_descent optimizer;
 	//RMSprop optimizer;
 	adam optimizer;
-	std::vector<int> idx_vector;
-	bool can_train = replay.getSampleIdxVector(idx_vector, batch_size);
+	std::vector<int> t_idx_vector;
+	bool can_train = replay.getSampleIdxVector(t_idx_vector, batch_size);
 	if(!can_train) return;
 
-	int i;
-	for( i = 0 ; i < idx_vector.size(); ++i){
-		vec_t s1, s2;
-		if(!replay.getState(idx_vector[i],s1,s2)){
-			--batch_size;
-			continue;
-		}
-		label_t action;
-		replay.getAction(idx_vector[i],action);
-		float reward;
-		replay.getReward(idx_vector[i],reward);
+	for(int i = 0 ; i < t_idx_vector.size(); ++i){
+		vec_t& s1 		= std::get<0>(replay[t_idx_vector[i]]);
+		label_t& action = std::get<1>(replay[t_idx_vector[i]]);
+		float& reward 	= std::get<2>(replay[t_idx_vector[i]]);
+		vec_t& s2 		= std::get<3>(replay[t_idx_vector[i]]);
 
 		// get Q-values from s1 using CURRENT Network 
 		vec_t desired_output = nn_ptr_->predict(s1);
@@ -47,11 +98,13 @@ void DQN::update(Replay& replay, int batch_size){
 		}
 		else {
 			// get maxQ from s2
-			const float maxQ = nn_ptr_->predict_max_value(s2);
+			vec_t q_ = nn_ptr_->predict(s2);
+			const float maxQ = getMaxQ(q_);//nn_ptr_->predict_max_value(s2);
 			desired_output[action] = reward + gamma_ * maxQ;
 		}
 		train_input_vector.push_back(s1);
 		desired_output_vector.push_back(desired_output);
+		target_label.push_back(action);
 	}
 
 	size_t training_batch = 1;	//batch_size;
@@ -62,35 +115,9 @@ void DQN::update(Replay& replay, int batch_size){
 	}
 
 	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
-	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
-}
-
-label_t DQN::selectAction(const vec_t& state, bool is_greedy){
-	
-	if(!is_greedy) {
-		if(bernoulli(epsilon_)){
-			epsilon_ = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * epsilon_;
-			return (label_t)uniform_rand(0, (int)nn_ptr_->out_data_size()-1);
-		}
-	}
-	else {
-		// for natural movement when not training 
-		if(bernoulli(0.05)){
-			return (label_t)uniform_rand(0, (int)nn_ptr_->out_data_size()-1);
-		}	
-	}
-	
-	//std::cout << state.size() << "<- state size in select action" << endl;
-	return nn_ptr_->predict_label(state);
-}
-
-void DQN::printQValues(const vec_t& state_vector){
-	vec_t qvalues = nn_ptr_->predict(state_vector);
-
-	for(int i = 0; i < qvalues.size(); ++i){
-		std::cout << qvalues[i] << " | ";
-	}
-	std::cout << endl;
+	std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
+	result ret = nn_ptr_->test(train_input_vector, target_label);
+	std::cout << "accuracy: " << ret.accuracy() << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,41 +133,38 @@ DDQN::DDQN()
 
 void DDQN::initialize(std::shared_ptr<network<sequential>>& nn_ptr){
 	DQN::initialize(nn_ptr);
-	//nn_ptr = std::move(nn_ptr);
 	target_nn_ptr_ = std::make_shared<network<sequential>>();
 	*target_nn_ptr_ = *nn_ptr_;
 }
 
 
-void DDQN::update(Replay& replay, int batch_size){
+void DDQN::update(PEReplay& replay, int batch_size){
 	
 	std::vector<vec_t> train_input_vector, desired_output_vector;
+	//std::vector<label_t> target_label;
 	
 	//gradient_descent optimizer;
 	//RMSprop optimizer;
 	adam optimizer;
 
-	std::vector<int> idx_vector;
-	bool can_train = replay.getSampleIdxVector(idx_vector, batch_size);
-	//bool can_train = replay.getPriotizedSampleIdxVector(idx_vector, batch_size);
+	std::vector<int> t_idx_vector;
+	bool can_train = replay.getSampleIdxVector(t_idx_vector, batch_size);
 	if(!can_train) return;
 
 	nn_ptr_.swap(target_nn_ptr_);	// double Q-network 
 
-	int cnt = 0;
-	for(int i = 0 ; i < idx_vector.size(); ++i){
-		vec_t s1, s2;
-		if(!replay.getState(idx_vector[i],s1,s2))	continue;
+	for(int i = 0 ; i < t_idx_vector.size(); ++i){
+		//std::vector<vec_t> train_input_vector, desired_output_vector;
 
-		label_t action;
-		replay.getAction(idx_vector[i],action);
-		float reward;
-		replay.getReward(idx_vector[i],reward);
+		vec_t& s1 		= std::get<0>(replay[t_idx_vector[i]]);
+		label_t& action = std::get<1>(replay[t_idx_vector[i]]);
+		float& reward 	= std::get<2>(replay[t_idx_vector[i]]);
+		vec_t& s2 		= std::get<3>(replay[t_idx_vector[i]]);
 
 		// get Q-values from s1 using Main Network 
 		vec_t double_q = nn_ptr_->predict(s1);
 
-		std::cout << "before:" << double_q[action] ;
+		std::cout << "before:" << double_q[action];
 		// learning algorithm 	
 		if(!s2.size()){
 			double_q[action] = reward;
@@ -150,28 +174,27 @@ void DDQN::update(Replay& replay, int batch_size){
 			vec_t target_q = target_nn_ptr_->predict(s2);
 
 			// DQN에서는 MAX-Q 값을 가져왔지만, 여기서는 해당 인덱스만..
-			label_t max_index  = nn_ptr_->predict_label(s2);
+			label_t max_index  = getMaxQIdx(target_q);
 			// 미리 구해둔 Q Value들(target_q)에서 위 인덱스의 값으로 MAX Q값을 얻는다. 
 			double_q[action] = reward + gamma_ * target_q[max_index];
 		}
-		std::cout << " after:" << double_q[action] << endl;
+		std::cout << "  After:" << double_q[action] << endl;
 		train_input_vector.push_back(s1);
 		desired_output_vector.push_back(double_q);
-		++cnt;
+
+		//nn_ptr_->train<mse>(optimizer, train_input_vector, desired_output_vector, 1, 1);
+		//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 	}
 
-	size_t training_batch = batch_size;		//cnt;
-	size_t epochs = batch_size*3;						
+	size_t training_batch = batch_size;	
+	size_t epochs = batch_size*DEFAULT_EPOCH_RATE;		
 
 	if(training_batch > 1){
 	  	optimizer.alpha *=
-	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * 0.01f /*learning rate of optimizer*/);
+	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
 	}
 
-	//optimizer.alpha *= static_cast<tiny_dnn::float_t>(sqrt(training_batch) * 0.01f);
-
-	//std::cout << "batch_size:" << batch_size << " Input Size:" << train_input_vector.size() << " output Size:" << desired_output_vector.size() << endl;
-	nn_ptr_->fit</*cross_entropy*/mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
+	nn_ptr_->train<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
 	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 }	
 

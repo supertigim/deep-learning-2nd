@@ -1,8 +1,8 @@
 #include "SelfDrivingWorld.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "models/selfdrivingcarnet.h"
+#include "AutoCarNet.h"
 
-const int CAR_PLAYED_NUM = 7;	// number of cars driving on the world
+const int CAR_PLAYED_NUM = 5;	// number of cars driving on the world
 
 SelfDrivingWorld::SelfDrivingWorld()
 	:is_training_(0)
@@ -16,17 +16,14 @@ void SelfDrivingWorld::initialize() {
 	createAICars(CAR_PLAYED_NUM);
 
 	// Make neural network
-	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
-	tiny_dnn::core::backend_t backend_type = tiny_dnn::core::default_engine();
+	std::shared_ptr<network<sequential>> nn 
+		= std::make_shared<AutoCarNet>("AutoCarNet"
+										,AICar::NETWORK_INPUT_NUM * AICar::INPUT_FRAME_CNT
+										,AICar::ACT_MAX);
 	
-		//change layer initialization
+	//change layer initialization
 	nn->weight_init(weight_init::he(3));
 	nn->bias_init(weight_init::constant(1.0));
-
-	TDNN_Models::self_driving_car_alt2_net(*nn,
-								backend_type,
-								AICar::NETWORK_INPUT_NUM * AICar::INPUT_FRAME_CNT,
-								AICar::ACT_MAX);
 
 	dqn_ = std::make_unique<DDQN>();
 	dqn_->initialize(nn);
