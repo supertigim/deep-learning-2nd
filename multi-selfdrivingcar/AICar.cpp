@@ -348,7 +348,7 @@ void AICar::drive(){
 		if (replay_.size() >= AICar::INPUT_FRAME_CNT)
 
 			//std::cout << "reward:" << reward << endl;
-			dqn.update(replay_, batch_size_);
+			dqn.update(replay_, batch_size_, batch_size_*3);
 	}
 }
 

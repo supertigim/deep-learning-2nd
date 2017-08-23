@@ -73,7 +73,7 @@ label_t DQN::getMaxQIdx(vec_t& q){
 	return ret;
 }
 
-void DQN::update(PEReplay& replay, int batch_size){
+void DQN::update(PEReplay& replay, size_t batch_size, size_t epochs){
 	std::vector<vec_t> train_input_vector, desired_output_vector;
 	std::vector<label_t> target_label;
 	//gradient_descent optimizer;
@@ -107,14 +107,14 @@ void DQN::update(PEReplay& replay, int batch_size){
 		target_label.push_back(action);
 	}
 
-	size_t training_batch = 1;	//batch_size;
-	size_t epochs = 1;			//batch_size; 
+	//size_t training_batch = 1;	//batch_size;
+	//size_t epochs = 1;			//batch_size; 
 
-	if(training_batch > 1){
-	  	optimizer.alpha *=	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
+	if(batch_size > 1){
+	  	optimizer.alpha *=	static_cast<tiny_dnn::float_t>(sqrt(batch_size) * gamma_);
 	}
 
-	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
+	nn_ptr_->fit<mse>(optimizer, train_input_vector, desired_output_vector, batch_size, epochs);
 	std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 	result ret = nn_ptr_->test(train_input_vector, target_label);
 	std::cout << "accuracy: " << ret.accuracy() << endl;
@@ -138,7 +138,7 @@ void DDQN::initialize(std::shared_ptr<network<sequential>>& nn_ptr){
 }
 
 
-void DDQN::update(PEReplay& replay, int batch_size){
+void DDQN::update(PEReplay& replay, size_t batch_size, size_t epochs){
 	
 	std::vector<vec_t> train_input_vector, desired_output_vector;
 	//std::vector<label_t> target_label;
@@ -186,15 +186,15 @@ void DDQN::update(PEReplay& replay, int batch_size){
 		//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 	}
 
-	size_t training_batch = batch_size;	
-	size_t epochs = batch_size*DEFAULT_EPOCH_RATE;		
+	//size_t training_batch = batch_size;	
+	//size_t epochs = 1; //batch_size*DEFAULT_EPOCH_RATE;		
 
-	if(training_batch > 1){
+	if(batch_size > 1){
 	  	optimizer.alpha *=
-	    	static_cast<tiny_dnn::float_t>(sqrt(training_batch) * gamma_);
+	    	static_cast<tiny_dnn::float_t>(sqrt(batch_size) * gamma_);
 	}
 
-	nn_ptr_->train<mse>(optimizer, train_input_vector, desired_output_vector, training_batch, epochs);
+	nn_ptr_->train<mse>(optimizer, train_input_vector, desired_output_vector, batch_size, epochs);
 	//std::cout << "Loss: " << nn_ptr_->get_loss<mse>(train_input_vector, desired_output_vector) << endl;
 }	
 

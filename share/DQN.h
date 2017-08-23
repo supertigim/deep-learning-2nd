@@ -9,7 +9,7 @@ const float MIN_EPSILON = 0.10f;
 const float EPSILON_DECAY_RATE = 0.9999f;
 const float DEFAULT_LEARNING_RATE = 0.95f;
 
-const int DEFAULT_EPOCH_RATE = 3;
+//const int DEFAULT_EPOCH_RATE = 3;
 
 /**
  *   Deep Q-Network
@@ -20,7 +20,7 @@ public:
 	~DQN(){}
 	virtual void initialize(std::shared_ptr<network<sequential>>& nn_ptr);
 	void setLearnigRate(float gamma){gamma_ = gamma;}
-	virtual void update(PEReplay& replay, int batch_size);
+	virtual void update(PEReplay& replay, size_t batch_size, size_t epochs = 1);
 	label_t selectAction(const vec_t& state, bool is_greedy = false);
 	vec_t forward(const vec_t& state_vector);
 	void printQValues(const vec_t& state_vector);
@@ -45,7 +45,7 @@ class DDQN: public DQN {
 public:
 	DDQN();
 	~DDQN(){}
-	void update(PEReplay& replay, int batch_size);
+	void update(PEReplay& replay, size_t batch_size, size_t epochs = 1);
 	void initialize(std::shared_ptr<network<sequential>>& nn_ptr);
 protected:
 	std::shared_ptr<network<sequential>> target_nn_ptr_;
