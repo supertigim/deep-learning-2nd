@@ -1,7 +1,10 @@
 #pragma once
 
-#include "common.h"
 #include "ConsoleGL.h"
+#include "DQN.h"
+
+#define MIN2(a, b)                            ((a) > (b) ? (b) : (a))
+#define MAX2(a, b)                            ((a) > (b) ? (a) : (b))
 
 const float DEFAULT_WALL_WIDTH = 0.05f;
 const float DEFAULT_PADDLE_WIDTH_RATIO = 0.3f;

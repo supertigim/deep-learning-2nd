@@ -16,15 +16,20 @@ public:
 	void initialize();
 
 protected:
+	void updateStateVector();
+	bool getState(vec_t& t);
+
+protected:
 	Breakout* game_;
 
 	std::unique_ptr<DQN> dqn_;
-	//network<sequential> nn_;
-	Replay replay_;
+	int min_batch_ ;
+	PEReplay replay_;
 
 	bool is_training_;
 	float epsilon_;
 	int input_frame_count_;
+	std::deque<vec_t> past_states_;
 };
 
 // end of file

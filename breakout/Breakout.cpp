@@ -74,7 +74,7 @@ void Breakout::printStateBuffer(){
 	// not implemented yet~~
 }
 
-void Breakout::movePaddle(DirType dir, F dx){
+void Breakout::movePaddle(DirType dir, float dx){
 
 	switch(dir){
 	case LEFT:
@@ -119,13 +119,13 @@ float Breakout::updateSatus(float dt){
             	restart(); 	
             }
 
-            //if( std::abs(ball_x_ - (paddle_x_ + (paddle_width_/2))) < 0.05f ){
+            if( std::abs(ball_x_ - (paddle_x_ + (paddle_width_/2))) < 0.05f ){
             //    //std::cout << "hit center";
-            //    gamestat = 1.2f;
-            //} else {
-            //    gamestat = 1.0f;    
-            //}
-            gamestat = 1.0f;
+                gamestat = 1.0f;
+            } else {
+                gamestat = 0.8f;    
+            }
+            //gamestat = 0.5f;//1.0f;
             //reward = 1.0f; 
             //isblocking = true;
              //reward

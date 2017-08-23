@@ -1,12 +1,13 @@
 #include "AIPlayer.h"
 #include <thread>
 #include <chrono>
-#include "models/breakoutnet.h"
+#include "BoNet.h"
 
 AIPlayer::AIPlayer(Breakout* game)
 	: game_(game)
 	, is_training_(true)
-	, input_frame_count_(1)
+	, input_frame_count_(4)
+	, min_batch_(2)
 {
 	if(is_training_ != game_->isTraining()) {
 		game_->toggleTrainigMode();
@@ -26,22 +27,18 @@ void AIPlayer::keyProcess(char ch){
 
 void AIPlayer::initialize(){
 
-	input_frame_count_ = 4;
-
 	game_->makeScene();
 	game_->flipBuffer();
 
-	std::shared_ptr<network<sequential>> nn = std::make_shared<network<sequential>>();
-	tiny_dnn::core::backend_t backend_type = tiny_dnn::core::default_engine();
-	TDNN_Models::cl_breakout_net(*nn, 
-								backend_type,
-								game_->height(),
-								game_->width(), 
-								input_frame_count_, 
-								game_->getNumActions());
+	std::shared_ptr<network<sequential>> nn 
+		= std::make_shared<BoNet>(	"Breakout Net"
+									,game_->height()
+									,game_->width()
+									,input_frame_count_
+									,game_->getNumActions());
 
 	//change layer initialization
-	nn->weight_init(weight_init::he());
+	nn->weight_init(weight_init::he(3));
 	nn->bias_init(weight_init::constant(1.0));
 
 	dqn_ = std::make_unique<DDQN>();
@@ -49,39 +46,48 @@ void AIPlayer::initialize(){
 	replay_.init(game_->screenSize(), input_frame_count_);
 }
 
+void AIPlayer::updateStateVector(){
+
+	vec_t t = game_->getStateBuffer();
+	past_states_.push_back(t);
+	if (past_states_.size() > input_frame_count_) {
+		past_states_.pop_front();
+	}
+}
+
+
+bool AIPlayer::getState(vec_t& t){
+	if (past_states_.size() < input_frame_count_) { 
+		t.clear();
+		return false; 
+	}
+
+	for(int i = 0, count = 0; i < input_frame_count_ ; ++i, count += game_->screenSize())
+		std::copy(past_states_[i].begin(), past_states_[i].end(), t.begin() + count);	
+	return true;
+}
+
 void AIPlayer::run(){
 
 	std::cout << "Game Start!! \n";
-	int count = 0;
-	std::deque<vec_t> past_states;
 
 	while(true){
+
+		std::unique_ptr<Transition> t_ptr = std::make_unique<Transition>(game_->screenSize() * input_frame_count_
+																	,0
+																	,0.0f
+																	,game_->screenSize() * input_frame_count_
+																	,0.0f);
+		vec_t& state 		= std::get<0>(*t_ptr);
+		label_t& action 	= std::get<1>(*t_ptr);
+		float& reward 		= std::get<2>(*t_ptr);
+		vec_t& next_state 	= std::get<3>(*t_ptr);
+		float& td 			= std::get<4>(*t_ptr);
       
-        Transition transition(game_->screenSize(), 0, 0.0f,0);
-       
-		vec_t& input_to_replay = std::get<0>(transition);
-		game_->getStateBuffer(input_to_replay);
+		if(getState(state))	action = (is_training_ == true)? dqn_->selectAction(state): dqn_->selectAction(state, true);
+		else 				action = 0;
 
-		past_states.push_back(input_to_replay);
-
-		label_t& action = std::get<1>(transition);
-		if (past_states.size() < input_frame_count_) {
-			action = 0; // stay because it doesn't have enough past states to make input to the net
-		}
-		else {
-			if (past_states.size() > input_frame_count_) {
-				past_states.pop_front();
-			}
-
-			vec_t input_to_nn(game_->screenSize()*input_frame_count_);
-			for(int i = 0, count = 0; i < input_frame_count_ ; ++i, count += game_->screenSize()){
-				std::copy(past_states[i].begin(), past_states[i].end(), input_to_nn.begin() + count);	
-			}
-	
-			action = (is_training_ == true)? dqn_->selectAction(input_to_nn): dqn_->selectAction(input_to_nn, true);
-		}
-
-        // s2 = policy(s1|a)
+		std::cout << "selected_dir - " << action << endl; 
         switch (action) {
         case 2:
         	game_->movePaddle(Breakout::LEFT);
@@ -95,26 +101,26 @@ void AIPlayer::run(){
         default:
             std::cout << "Wrong direction " << endl;
         }
+
         game_->makeScene();
         if(is_training_ == false) game_->render(); 
         game_->flipBuffer();
 
-        float& reward = std::get<2>(transition);
         reward = game_->updateSatus();
 
-        int& isTerminated = std::get<3>(transition);
-        if( reward < 0){
-        	isTerminated = 1;
-        }
+        updateStateVector();
 
-		if(is_training_){
-			replay_.push_back(transition); // store transition 	
-			if(count >= 4){
-				dqn_->update(replay_, count);
-				count = 0;
+        if( reward < 0)	next_state.clear();
+        else 			getState(next_state);
+
+        if(state.size() && is_training_){
+        	std::cout << "Training... " << "\n";
+        	td = reward;
+			replay_.addTransition(std::move(t_ptr));	
+
+			if (replay_.size() >= min_batch_) {
+				dqn_->update(replay_, min_batch_);
 			}
-			++count;
-			std::cout << "Training... " << "\n";
 		}
 		else{
 			std::this_thread::sleep_for(std::chrono::milliseconds(40));
@@ -124,7 +130,7 @@ void AIPlayer::run(){
             system("cls");
 #endif
 		}
-        std::cout << "selected_dir - " << action << endl; 
+        
 	}
 }
 
