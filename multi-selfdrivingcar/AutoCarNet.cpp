@@ -9,6 +9,7 @@ AutoCarNet::AutoCarNet( const std::string &name,
     using max_pool_l    = tiny_dnn::layers::max_pool;
     using input_l       = tiny_dnn::layers::input;
     using fc_l          = tiny_dnn::layers::fc;
+    using recur_l       = tiny_dnn::recurrent_cell_layer;
 
     using relu_a     = tiny_dnn::activation::relu;
     using elu_a     = tiny_dnn::activation::elu;
@@ -24,7 +25,8 @@ AutoCarNet::AutoCarNet( const std::string &name,
     *this   << input_l(input_dim)
             << fc_l(input_dim,fc1_n_c,    true, backend_type) << relu_a()
             << fc_l(fc1_n_c,  fc2_n_c,    true, backend_type) << relu_a()
-            << fc_l(fc2_n_c,  output_dim, true, backend_type) << relu_a()
+            //<< fc_l(fc2_n_c,  output_dim, true, backend_type) << relu_a()
+            << recur_l(fc2_n_c, output_dim)
     ;
 }
 
